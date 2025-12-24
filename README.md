@@ -75,3 +75,8 @@ in order to update the version of Lean and Mathlib used in the project you need 
 - A [broader list](https://docs.google.com/document/d/1kD7H4E28656ua8jOGZ934nbH2HcBLyxcRgFDduH5iQ0) of AI and formal mathematics resources.
 
 More resource suggestions welcome!
+
+
+## Acknowledgment
+
+* Professor Terence Tao's [Analysis](https://github.com/teorth/analysis)
