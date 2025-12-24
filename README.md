@@ -2,11 +2,11 @@
 
 The files in this directory contain formalizations of selected topics of PDE (partial differential equations) into [Lean](https://lean-lang.org/).
 The ultimate goal of this formalization is to prepare a comprehensive toolbox for formal analysis of PDEs, for both research and education purposes.
-This formalization may _not_ fully optimized for efficient Lean compilation, and may have compatibility issue with the lastes Lean and mahtlib versions (which evolve very fast).
+This formalization may _not_ be fully optimized for efficient Lean compilation, and may have compatibility issues with the latest Lean and mahtlib versions (which evolve very rapidly).
 
 
 ## References
-["Partial Differential Equations, A First Course"](https://bookstore.ams.org/amstext-54/) by Professor [Rustom Choksi](https://scholar.google.com/citations?user=Fk1zaTgAAAAJ&hl=en)
+["Partial Differential Equations, A First Course"](https://bookstore.ams.org/amstext-54/),  [Rustom Choksi](https://scholar.google.com/citations?user=Fk1zaTgAAAAJ&hl=en), AMS, 2022.
 
 
 ## Sections
