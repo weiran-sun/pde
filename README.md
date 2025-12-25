@@ -16,6 +16,8 @@ This formalization may _not_ be fully optimized for efficient Lean compilation, 
 #### Heat
 
 - [HeatKernel](https://weiran-sun.github.io/pde/PDE/Basics/Heat/HeatKernel.html): The Fundamental Solution/Heat Kernel and Its Properties.
+- [HeatSolution](https://weiran-sun.github.io/pde/PDE/Basics/Heat/HeatSolution.html): The convolution solution of the heat kernel.
+- [HeatSolutionProperty](https://weiran-sun.github.io/pde/PDE/Basics/Heat/HeatSolutionProperty.html): Properties of the heat solution, involving the convolution of the heat kernel and the initial condition
 
 
 ## Other Resources
