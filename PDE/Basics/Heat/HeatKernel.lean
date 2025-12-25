@@ -30,7 +30,7 @@ This formalization follows Chapter 7.2.1, ["Partial Differential Equations, A Fi
 open MeasureTheory Filter
 open scoped Topology
 
-namespace HeatKernel
+namespace Heat
 
 
 
@@ -291,4 +291,4 @@ it represents the evolution of an initial point source of heat at `x = 0`.
 -/
 
 
-end HeatKernel
+end Heat
