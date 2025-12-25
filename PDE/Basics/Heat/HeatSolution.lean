@@ -407,6 +407,7 @@ lemma integrable_heatKernel (hα : 0 < α) (ht : 0 < t) :
   have h0 := integral_undef h
   simpa [h0] using integral_heatKernel_one_gaussian α t hα ht
 
+
 lemma integrable_heatKernel_slice
     (hα : 0 < α) (ht : 0 < t) (x : ℝ) :
     Integrable (fun y : ℝ => heatKernel α (x - y) t) := by
@@ -416,6 +417,7 @@ lemma integrable_heatKernel_slice
     simp [sub_eq_neg_add]
    rw [this]
    exact (integrable_heatKernel hα ht).comp_add_right x |>.comp_neg
+
 
 lemma integrable_heatKernel_mul_of_Linfty
     {B α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
@@ -438,6 +440,7 @@ lemma integrable_heatKernel_mul_of_Linfty
       using Integrable.smul_of_top_right
          (integrable_heatKernel_slice hα ht x) (Linfty_g)
 
+
 lemma integrable_heatKernel_mul_of_L1
     {α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
     (hα : 0 < α) (ht : 0 < t)
@@ -445,10 +448,12 @@ lemma integrable_heatKernel_mul_of_L1
     Integrable (fun y : ℝ => heatKernel α (x - y) t * g y) := by
    simpa using Integrable.smul_of_top_right hg (Linfty_heatKernel hα ht)
 
+
 lemma aestronglyMeasurable_heatKernel_mul
     {α x t : ℝ} (hα : 0 < α) (ht : 0 < t) (g : ℝ → ℝ) (hg : Integrable g volume) :
       AEStronglyMeasurable (fun y : ℝ => heatKernel α (x - y) t * g y) volume:= by
         exact (integrable_heatKernel_mul_of_L1 g hα ht hg).aestronglyMeasurable
+
 
 lemma eventually_aestronglyMeasurable_heatKernel_mul
     {α : ℝ} (g : ℝ → ℝ) (hg : Integrable g volume) {x t : ℝ} (ht : 0 < t) :
@@ -457,11 +462,13 @@ lemma eventually_aestronglyMeasurable_heatKernel_mul
   have : Continuous (fun y => heatKernel α (x - y) τ) := by continuity
   exact (this.aestronglyMeasurable).mul hg.aestronglyMeasurable
 
+
 lemma aestronglyMeasurable_HKt_mul
     {α x t : ℝ} (g : ℝ → ℝ)
     (hg : Integrable g) (hα : 0 < α) (ht : 0 < t) :
     AEStronglyMeasurable (fun y : ℝ => HKt α (x - y) t * g y) volume := by
     exact (meas_HKt hα ht).mul hg.aestronglyMeasurable
+
 
 lemma integ_HKt_mul_of_L1
     {α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
@@ -470,11 +477,13 @@ lemma integ_HKt_mul_of_L1
     Integrable (fun y : ℝ => HKt α (x - y) t * g y) := by
    simpa using Integrable.smul_of_top_right hg (HKt_Linfinity_bound ht hα)
 
+
 lemma aestronglyMeasurable_HKx_mul
     {α x t : ℝ} (g : ℝ → ℝ)
     (hg : Integrable g)(hα : 0 < α) (ht : 0 < t):
     AEStronglyMeasurable (fun y : ℝ => HKx α (x - y) t * g y) volume := by
     exact (meas_HKx hα ht).mul hg.aestronglyMeasurable
+
 
 lemma integ_HKx_mul_of_L1
     {α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
@@ -483,11 +492,13 @@ lemma integ_HKx_mul_of_L1
     Integrable (fun y : ℝ => HKx α (x - y) t * g y) := by
    simpa using Integrable.smul_of_top_right hg (HKx_Linfinity_bound ht hα)
 
+
 lemma aestronglyMeasurable_HKxx_mul
     {α x t : ℝ} (g : ℝ → ℝ)
     (hg : Integrable g)(ht : 0 < t) (hα : 0 < α):
     AEStronglyMeasurable (fun y : ℝ => HKxx α (x - y) t * g y) volume := by
   exact (meas_HKxx hα ht).mul hg.aestronglyMeasurable
+
 
 lemma integ_HKxx_mul_of_L1
     {α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
@@ -545,6 +556,7 @@ lemma diff_HKx_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 
   rw [h_simplify] at hcomp
   simpa using hcomp.mul_const (g y)
 
+
 lemma diff_HKxx_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ)(ht : 0 < t) (hα : 0 < α):
     ∀ᵐ y ∂volume, ∀ x' ∈ Metric.ball x 1,
       HasDerivAt (fun x'' => HKx α (x'' - y) t * g y) (HKxx α (x' - y) t * g y) x' := by
@@ -566,6 +578,7 @@ lemma diff_HKxx_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ)(ht : 0 < t) (hα : 
     ext x''; rfl
   rw [h_simplify] at hcomp
   simpa using hcomp.mul_const (g y)
+
 
 /-- Swap the time derivative $\partial_t$ with the integral $\int$. -/
 lemma swap_t_heatKernel
@@ -636,6 +649,7 @@ lemma swap_t_heatKernel
 
     exact result.2
 
+
 /-- Swap the spatial derivative $\partial_x$ with the integral $\int$. -/
 lemma swap_x_heatKernel
   {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 0 < α)
@@ -699,6 +713,7 @@ lemma swap_x_heatKernel
         diff_HK_mul'
 
     exact result.2
+
 
 /-- Swap the second spatial derivative $\partial_{xx}$ with the integral $\int$. -/
 lemma swap_xx_heatKernel
