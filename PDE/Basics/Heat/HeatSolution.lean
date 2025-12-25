@@ -12,7 +12,7 @@ import Mathlib.Topology.Basic
 import PDE.Basics.Heat.HeatKernel
 
 /-!
-# The Fundamental Solution and Its Properties
+# The Fundamental Solution of Heat Equation
 
 This file formalizes the properties of the heat kernel and its convolution solution
 following Rustom Choksi's Partial Differential Equations book (Chapter 7.2.2).
