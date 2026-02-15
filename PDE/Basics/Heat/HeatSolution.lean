@@ -2,6 +2,7 @@ import Mathlib.Tactic
 import Mathlib.Analysis.SpecialFunctions.MulExpNegMulSq
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Analysis.Calculus.ParametricIntegral
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
@@ -205,7 +206,6 @@ lemma sq_mul_exp_neg_mul_sq_le (hb : 0 < b) (x : ℝ) :
   calc
     x^2 * Real.exp (-(b * x^2)) = (1/b) * (b * x^2 * Real.exp (-(b * x^2))) := by
       field_simp [ne_of_gt hb]
-      ring
     _ ≤ (1/b) * Real.exp (-1) := by
       gcongr
     _ = Real.exp (-1) / b := by ring
@@ -245,7 +245,7 @@ lemma pointwise_bound_HKt {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
    -- Convert the exponential notation in the goal to match the bounds
    have h1 : -(1 / (4 * α * t)) * x ^ 2 = -x ^ 2 / (4 * α * t) := by field_simp
    rw [← h1]
-   calc _ ≤ _ := abs_add _ _
+   calc _ ≤ _ := abs_add_le _ _
         _ ≤ _ := add_le_add bound_1 bound_2
         _ = 3 / (2 * t) * (1 / √(4 * Real.pi * α * t)) := by ring
 
@@ -279,10 +279,22 @@ lemma pointwise_bound_HKx
     _ = (c α t) * (2 * (a α t / Real.sqrt (a α t))) := by ring
     _ = (c α t) * (2 * Real.sqrt (a α t)) := by rw [Real.div_sqrt]
     _ = Kx α t := by
-      unfold a;unfold c;unfold Kx;unfold heatK;field_simp;ring_nf
-      congr
-      · exact (Real.sq_sqrt hα.le).symm
-      · exact (Real.sq_sqrt ht.le).symm
+      unfold a c Kx heatK
+      field_simp
+      ring_nf
+      -- congr
+      -- · exact (Real.sq_sqrt hα.le).symm
+      -- · exact (Real.sq_sqrt ht.le).symm
+      by_cases h : α * t = 0;
+      · aesop;
+      · cases lt_or_gt_of_ne h
+        · norm_num [ Real.sqrt_eq_zero_of_nonpos, Real.pi_pos.le, ‹_› ];
+          norm_num [ Real.sqrt_eq_zero_of_nonpos ( show α * t ≤ 0 by linarith ), Real.sqrt_eq_zero_of_nonpos ( show α⁻¹ * t⁻¹ ≤ 0 by nlinarith [ inv_mul_cancel₀ ( show α ≠ 0 by aesop ), inv_mul_cancel₀ ( show t ≠ 0 by aesop ) ] ) ];
+        · field_simp;
+          rw [ Real.sqrt_mul <| by positivity, Real.sqrt_mul <| by positivity ] ; ring;
+          rw [ show α * t = ( α⁻¹ * t⁻¹ ) ⁻¹ by group, Real.sqrt_inv ]
+          norm_num [ ← mul_assoc, ← Real.sqrt_div_self ]
+          grind
 
 
 lemma HKx_Linfinity_bound {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
@@ -320,7 +332,7 @@ lemma HKxx_uniform_bound {α t : ℝ} (hα : 0 < α) (ht : 0 < t) :
     calc
       |-2 * (a α t) + 4 * (a α t)^2 * x^2| * Real.exp (-(a α t) * x^2)
           ≤ (|-2 * (a α t)| + |4 * (a α t)^2 * x^2|) * Real.exp (-(a α t) * x^2) := by
-        exact mul_le_mul_of_nonneg_right (abs_add _ _) (Real.exp_pos _).le
+        exact mul_le_mul_of_nonneg_right (abs_add_le _ _) (Real.exp_pos _).le
       _ = (2 * (a α t) + 4 * (a α t)^2 * x^2) * Real.exp (-(a α t) * x^2) := by
         congr
         · rw [abs_of_neg (show -2 * (a α t) < 0 from by linarith), neg_mul, neg_neg]
@@ -645,7 +657,7 @@ lemma swap_t_heatKernel
       simpa using (hg.abs).const_mul ((3 / t) * (c α (t/2)))
 
     have result := hasDerivAt_integral_of_dominated_loc_of_deriv_le
-      (by linarith) meas_HK_mul integ_HK_mul meas_HKt_mul dominate_fun Integ_dominate_fun diff_HK_mul'
+      mem_nhds meas_HK_mul integ_HK_mul meas_HKt_mul dominate_fun Integ_dominate_fun diff_HK_mul'
 
     exact result.2
 
@@ -704,7 +716,7 @@ lemma swap_x_heatKernel
 
     have result :=
       hasDerivAt_integral_of_dominated_loc_of_deriv_le
-        (by norm_num)
+        mem_nhds
         meas_HK_mul
         integ_HK_mul
         meas_HKx_mul
@@ -765,7 +777,7 @@ lemma swap_xx_heatKernel
 
     have result :=
       hasDerivAt_integral_of_dominated_loc_of_deriv_le
-        (by norm_num)
+        mem_nhds
         meas_HKx_mul
         integ_HKx_mul
         meas_HKxx_mul

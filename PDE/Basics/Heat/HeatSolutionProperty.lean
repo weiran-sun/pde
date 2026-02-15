@@ -64,6 +64,7 @@ lemma heatKernel_mass_one_x_sub_y_even
         = (fun y : ℝ => heatKernel α (y - x) t) := by
         unfold heatKernel
         field_simp
+        exact funext fun y => by ring;
   have h_translate :
       ∫ y, heatKernel α (y - x) t = ∫ y, heatKernel α y t := by
     -- `y - x = (-x) + y`
@@ -167,7 +168,7 @@ lemma heatTail_changeOfVariables
               rw [div_le_iff₀' s_pos, abs_mul, abs_inv, abs_of_pos s_pos]
               field_simp [s_pos.ne.symm]
             · congr 2
-              field_simp [s_pos.ne.symm]; left; rw [Real.sq_sqrt]; positivity
+              field_simp [s_pos.ne.symm]; rw [Real.sq_sqrt (by positivity)]; ring
       _ = 1 / √(4 * Real.pi * α * t) * ∫ z, Set.indicator {z : ℝ | δ / s ≤ |s⁻¹  * z|}
                (fun z => Real.exp (-(s⁻¹ * z)^2)) z := by
           simp [Set.indicator_const_mul]
@@ -183,7 +184,10 @@ lemma heatTail_changeOfVariables
       _ = (1 / Real.sqrt Real.pi) * ∫ z, Set.indicator
            {z : ℝ | δ / s ≤ |z|}
            (fun z => Real.exp (-z^2)) z := by
-           unfold s; rw [← mul_assoc]; field_simp; ring
+             unfold s; rw [← mul_assoc]; field_simp
+             rw [ mul_right_comm, mul_comm ];
+             rw [ mul_comm, ← Real.sqrt_mul <| by positivity ]
+             ac_rfl
 
 def IsBoundedAbs (g : ℝ → ℝ) : Prop := ∃ B, ∀ y, |g y| ≤ B
 
@@ -428,10 +432,14 @@ theorem heatKernel_IVP_limit_textbook
             simp only [abs_abs]
             calc |g y - g x|
               _ ≤ |g y| + |g x| := abs_sub _ _
-              _ ≤ B + |g x|     := add_le_add_right (hB_bound y) _
+              _ ≤ B + |g x|     := by linarith [hB_bound y]
           have h_diff_meas : AEStronglyMeasurable (fun y ↦ |g y - g x|) volume :=
             (Continuous.abs (Continuous.sub g_cont continuous_const)).aestronglyMeasurable
-          have h_swapped := Integrable.bdd_mul (hK_int t ht_pos) h_diff_meas h_diff_bdd
+          obtain ⟨M, hM⟩ := h_diff_bdd
+          have h_norm_bdd : ∀ᵐ y, ‖|g y - g x|‖ ≤ M := by
+            filter_upwards with y
+            exact hM y
+          have h_swapped := Integrable.bdd_mul (hK_int t ht_pos) h_diff_meas h_norm_bdd
           apply Integrable.congr h_swapped
           filter_upwards with y
           rw [mul_comm]
@@ -495,8 +503,8 @@ theorem heatKernel_IVP_limit_textbook
             exact (integrable_heatKernel_slice hα ht_pos x).const_mul (g x)
       _ = |∫ y, heatKernel α (x - y) t * (g y - g x)| := by
           congr; ext y; ring
-      _ ≤ ∫ y, |heatKernel α (x - y) t * (g y - g x)| := by
-          simpa using abs_integral_le_integral_abs
+      _ ≤ ∫ y, |heatKernel α (x - y) t * (g y - g x)| :=
+          abs_integral_le_integral_abs
       _ = ∫ y, heatKernel α (x - y) t * |g y - g x| := by
           refine integral_congr_ae ?_
           filter_upwards with y
@@ -560,8 +568,8 @@ theorem heatKernel_IVP_limit_textbook
        rw [integral_mul_const]
        linarith
      _ ≤ (ε / 4) * ∫ y, heatKernel α (x - y) t := by
-       gcongr
-       exact setIntegral_le_integral (hK_int t ht_pos) (ae_of_all _ hφ_nonneg)
+       apply mul_le_mul_of_nonneg_left _ (by positivity)
+       exact setIntegral_le_integral (hK_int t ht_pos) (ae_of_all volume hφ_nonneg)
      _ ≤ ε / 4 := by simp [hk_mass_one t ht_pos]
 
   ---------------------------------------------------------------------------------
@@ -680,6 +688,8 @@ theorem heatKernel_IVP_limit_textbook
       _ = (2 / Real.sqrt Real.pi) * (Real.sqrt (α * t) / δ₁) := by
           rw [Real.sqrt_mul (by positivity), Real.sqrt_mul (by norm_num : (0:ℝ) ≤ 4)]
           ring_nf; field_simp
+          rw [ ← mul_comm ]
+          norm_num [ mul_assoc, mul_comm, mul_left_comm, hα.le]
       _ = (2 / (Real.sqrt Real.pi * δ₁)) * Real.sqrt α * Real.sqrt t := by
           rw [Real.sqrt_mul (by positivity)]; ring
 
@@ -746,7 +756,7 @@ theorem heatKernel_IVP_limit_textbook
         ≤ C' * Real.sqrt ((ε / (4 * C'))^2) := by gcongr
       _ = C' * (ε / (4 * C')) := by
           rw [Real.sqrt_sq]; positivity
-      _ = ε / 4 := by field_simp; ring
+      _ = ε / 4 := by field_simp
 
   rcases this with ⟨δ, hδ_pos, hδ_small⟩
 
