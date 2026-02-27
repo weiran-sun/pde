@@ -122,8 +122,10 @@ lemma deriv_sqrt_inv {x : ℝ} (hx : x > 0) :
   have := HasDerivAt.inv hsqrt hpos
   convert this using 1
   field_simp [hpos]
-  · rfl
-  · rw [Real.sq_sqrt hx.le]; field_simp [ne_of_gt hx]; ring
+  · ext τ
+    simp [one_div] -- Maps 1 / f x to (f x)⁻¹
+  · rw [Real.sq_sqrt hx.le]
+    field_simp [ne_of_gt hx]
 
 
 /-- Derivative of the exponential term `exp(-(x²)/(4αt))` with respect to `x`. -/
@@ -159,7 +161,7 @@ lemma hasDerivAt_heatKernel_t (hα : 0 < α) {t x : ℝ} (ht : 0 < t) :
     have hpos : 4 * Real.pi * α * t > 0 := by positivity
     have := (deriv_sqrt_inv hpos).comp t hg
     convert this using 1
-    field_simp [ne_of_gt hpos]; ring_nf
+    field_simp [ne_of_gt hpos]
 
   -- Derivative of the exponent -(x²)/(4ατ) with respect to t
   have h_inside : HasDerivAt (fun τ => -(x^2) / (4 * α * τ))
