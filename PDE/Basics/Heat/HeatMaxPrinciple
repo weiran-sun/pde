@@ -501,39 +501,15 @@ lemma heat_equation_no_interior_max
 
     exact not_lt_of_ge hpde_nonneg (h_v_pde_ineq x₀ t₀ h0)
 
-
-
 ------------------------------------------------------------------
--- Theorem:
---
---
-
+  -- Theorem:
+  --
+  --Suppose u ∈ C²(Ω_T) and u satisfies the heat equation in the interior
+  --of Ω_T. Then max_{S_boundary} u = max_{Ω_T} u.
+  --
 ------------------------------------------------------------------
 
-lemma Omega_T_decompose {l T : ℝ} {p : ℝ × ℝ} (hp : p ∈ Ω_T l T) :
-  p ∈ S_boundary l T ∨ p ∈ Interior l T ∨ p ∈ Top_Edge l T := by
-  obtain ⟨x, t⟩ := p
-  simp only [Ω_T, S_boundary, Interior, Top_Edge, Set.mem_prod, Set.mem_Icc,
-    Set.mem_union, Set.mem_singleton_iff, Set.mem_Ioo] at hp ⊢
-  obtain ⟨⟨hx0, hxl⟩, ⟨ht0, htT⟩⟩ := hp
-  rcases lt_or_eq_of_le hx0 with hx0_lt | rfl
-  · rcases lt_or_eq_of_le hxl with hxl_lt | rfl
-    · rcases lt_or_eq_of_le ht0 with ht0_lt | rfl
-      · rcases lt_or_eq_of_le htT with htT_lt | rfl
-        · right; left; exact ⟨⟨hx0_lt, hxl_lt⟩, ⟨ht0_lt, htT_lt⟩⟩
-        · right; right; exact ⟨⟨hx0_lt, hxl_lt⟩, rfl⟩
-      · left; left; left; exact ⟨⟨hx0, hxl⟩, rfl⟩
-    · left; right; exact ⟨rfl, ht0, htT⟩
-  · left; left; right; exact ⟨rfl, ht0, htT⟩
-
--- lemma Omega_T_decompose' {l T : ℝ} {p : ℝ × ℝ} (hp : p ∈ Ω_T l T) :
---   p ∈ S_boundary l T ∨ p ∈ Interior l T ∨ p ∈ Top_Edge l T := by
---   simp [Ω_T, S_boundary, Interior, Top_Edge, Set.mem_prod, Set.mem_Icc, Set.mem_Ioo]
---   rcases hp with ⟨⟨hx0, hxl⟩, ⟨ht0, htT⟩⟩
---   repeat rcases lt_or_eq_of_le (by assumption) with _ | rfl
---   all_goals aesop
-
-lemma deriv_nonneg_of_isLocalMaxOn_Icc_right_S
+lemma deriv_nonneg_of_isLocalMaxOn_Icc_right
     {f : ℝ → ℝ} {T : ℝ} (hT : 0 < T)
     (hC1 : ContDiffOn ℝ 1 f (Icc 0 T))
     (hmax : IsLocalMaxOn f (Icc 0 T) T) :
@@ -556,6 +532,17 @@ lemma deriv_nonneg_of_isLocalMaxOn_Icc_right_S
     rw [hEq] at hnonpos
     nlinarith
 
+
+lemma Omega_T_decompose {l T : ℝ} {p : ℝ × ℝ} (hp : p ∈ Ω_T l T) :
+    p ∈ S_boundary l T ∨ p ∈ Interior l T ∨ p ∈ Top_Edge l T := by
+  obtain ⟨x, t⟩ := p
+  obtain ⟨⟨hx0, hxl⟩, ht0, htT⟩ := hp
+  simp only [S_boundary, Interior, Top_Edge, Set.mem_union, Set.mem_prod,
+    Set.mem_Icc, Set.mem_singleton_iff, Set.mem_Ioo] at *
+  rcases ht0.eq_or_lt with rfl | h1 <;> rcases htT.eq_or_lt with rfl | h2 <;>
+  rcases hx0.eq_or_lt with rfl | h3 <;> rcases hxl.eq_or_lt with rfl | h4 <;>
+  simp_all
+
 lemma heat_equation_no_top_edge_max
   {l T α ε : ℝ} {u v : ℝ → ℝ → ℝ}
   (hT : 0 < T) (hl : 0 < l) (hα : 0 < α) (hε : 0 < ε)
@@ -564,40 +551,38 @@ lemma heat_equation_no_top_edge_max
   (h_pde : ∀ x t, (x, t) ∈ Interior l T →
     deriv (fun t' ↦ u x t') t = α * deriv (fun x' ↦ deriv (fun x'' ↦ u x'' t) x') x) :
   ∀ x₀, 0 < x₀ → x₀ < l → ¬ IsMaxOn (fun p ↦ v p.1 p.2) (Ω_T l T) (x₀, T) := by
-  intro x₀ hx0_pos hx0_lt hmax
+    intro x₀ hx0_pos hx0_lt hmax
 
-  let v_space : ℝ → ℝ := fun x ↦ v x T
-  let v_time : ℝ → ℝ := fun t ↦ v x₀ t
+    let v_space : ℝ → ℝ := fun x ↦ v x T
+    let v_time : ℝ → ℝ := fun t ↦ v x₀ t
 
-  have h_vxx_le : deriv (deriv v_space) x₀ ≤ 0 :=
-    (local_max_implies_second_deriv_nonpos (by
+    have h_vxx_le : deriv (deriv v_space) x₀ ≤ 0 :=
+      (local_max_implies_second_deriv_nonpos (by
+        subst hv_def
+        exact ((h_smooth.comp (contDiff_id.prodMk contDiff_const).contDiffOn fun x hx ↦ ⟨⟨hx.1.le, hx.2.le⟩, ⟨hT.le, le_rfl⟩⟩).contDiffAt
+              (Ioo_mem_nhds hx0_pos hx0_lt)).add (contDiff_const.mul (contDiff_id.pow 2)).contDiffAt)
+        ((show IsMaxOn v_space (Ioo 0 l) x₀ from fun x hx ↦ hmax (⟨⟨hx.1.le, hx.2.le⟩, ⟨hT.le, le_rfl⟩⟩ :
+        (x, T) ∈ Ω_T l T)).isLocalMax (Ioo_mem_nhds hx0_pos hx0_lt))).2
+
+    have h_vt_ge : 0 ≤ derivWithin v_time (Iic T) T := by
+      have h_vt_eq : derivWithin v_time (Iic T) T = derivWithin v_time (Icc 0 T) T :=
+       derivWithin_congr_set' l (eventually_of_mem
+        (mem_nhdsWithin_of_mem_nhds (Ioo_mem_nhds hT (lt_add_one T)))
+         fun y hy ↦ propext ⟨fun h ↦ ⟨hy.1.le, h⟩, fun h ↦ h.2⟩)
+      rw [h_vt_eq]
+      exact deriv_nonneg_of_isLocalMaxOn_Icc_right hT (by
+        subst hv_def
+        exact ((h_smooth.of_le (by norm_num)).comp (ContDiff.prodMk (contDiff_const : ContDiff ℝ 1 fun _ ↦ x₀)
+              (contDiff_id : ContDiff ℝ 1 id)).contDiffOn fun t ht ↦ ⟨⟨hx0_pos.le, hx0_lt.le⟩, ht⟩).add
+              (contDiff_const : ContDiff ℝ 1 fun _ ↦ ε * x₀ ^ 2).contDiffOn)
+              (Filter.eventually_of_mem self_mem_nhdsWithin fun t ht ↦ show v_time t ≤ v_time T from hmax
+              (⟨⟨hx0_pos.le, hx0_lt.le⟩, ht⟩ : (x₀, t) ∈ Ω_T l T))
+
+    have hpde_eq : derivWithin v_time (Iic T) T - α * deriv (deriv v_space) x₀ = -2 * α * ε := by
       subst hv_def
-      exact ((h_smooth.comp (contDiff_id.prodMk contDiff_const).contDiffOn fun x hx ↦ ⟨⟨hx.1.le, hx.2.le⟩, ⟨hT.le, le_rfl⟩⟩).contDiffAt
-             (Ioo_mem_nhds hx0_pos hx0_lt)).add (contDiff_const.mul (contDiff_id.pow 2)).contDiffAt)
-      ((show IsMaxOn v_space (Ioo 0 l) x₀ from fun x hx ↦ hmax (⟨⟨hx.1.le, hx.2.le⟩, ⟨hT.le, le_rfl⟩⟩ :
-      (x, T) ∈ Ω_T l T)).isLocalMax (Ioo_mem_nhds hx0_pos hx0_lt))).2
-  have h_vt_ge : 0 ≤ derivWithin v_time (Iic T) T := by
-    have h_vt_eq : derivWithin v_time (Iic T) T = derivWithin v_time (Icc 0 T) T := by
-      apply derivWithin_congr_set'
-      refine eventually_of_mem (mem_nhdsWithin_of_mem_nhds (Ioo_mem_nhds hT (lt_add_one T)))
-             fun y hy ↦ propext ⟨fun h ↦ ⟨hy.1.le, h⟩, fun h ↦ h.2⟩
-      subst hv_def
-      simp_all only [v_space]
-      exact l
-    rw [h_vt_eq]
-    exact deriv_nonneg_of_isLocalMaxOn_Icc_right_S hT (by
-      subst hv_def
-      exact ((h_smooth.of_le (by norm_num)).comp (ContDiff.prodMk (contDiff_const : ContDiff ℝ 1 fun _ ↦ x₀)
-            (contDiff_id : ContDiff ℝ 1 id)).contDiffOn fun t ht ↦ ⟨⟨hx0_pos.le, hx0_lt.le⟩, ht⟩).add
-            (contDiff_const : ContDiff ℝ 1 fun _ ↦ ε * x₀ ^ 2).contDiffOn)
-            (Filter.eventually_of_mem self_mem_nhdsWithin fun t ht ↦ show v_time t ≤ v_time T from hmax
-            (⟨⟨hx0_pos.le, hx0_lt.le⟩, ht⟩ : (x₀, t) ∈ Ω_T l T))
+      exact pde_boundary_val hT hl hx0_pos hx0_lt h_smooth h_pde
 
-  have hpde_eq : derivWithin v_time (Iic T) T - α * deriv (deriv v_space) x₀ = -2 * α * ε := by
-    subst hv_def
-    exact pde_boundary_val hT hl hx0_pos hx0_lt h_smooth h_pde
-
-  nlinarith
+    nlinarith
 
 lemma max_v_on_S_boundary
   {l T : ℝ} {v : ℝ → ℝ → ℝ}
@@ -616,16 +601,8 @@ lemma max_v_on_S_boundary
     rcases h_Top with ⟨⟨hx_pos, hx_lt⟩, rfl⟩
     exact False.elim (h_no_top x₀ hx_pos hx_lt hp_max_val)
 
-------------------------------------------------------------------
-  -- Theorem:
-  --
-  --Suppose u ∈ C²(Ω_T) and u satisfies the heat equation in the interior
-  --of Ω_T. Then max_{S_boundary} u = max_{Ω_T} u.
-  --
-------------------------------------------------------------------
-
 theorem heat_equation_max_principle
-  (u : ℝ → ℝ → ℝ) (hl : 0 < l) (hT : 0 < T) (hα : 0 < α)
+  (u : ℝ → ℝ → ℝ) (hl : 0 < l) (hT : 0 < T) (hα : 0 < α )
   (h_smooth : ContDiffOn ℝ 2 (fun p : ℝ × ℝ => u p.1 p.2) (Ω_T l T))
   (h_pde : ∀ x t, (x, t) ∈ Interior l T →
     deriv (fun t' => u x t') t = α * deriv (fun x' => deriv (fun x'' => u x'' t) x') x) :
@@ -652,7 +629,7 @@ theorem heat_equation_max_principle
     exact h_smooth.continuousOn
 
   have h_Scont : ContinuousOn (fun p : ℝ × ℝ => u p.1 p.2) (S_boundary l T) :=
-      h_cont.mono h_sub
+     h_cont.mono h_sub
 
   have hΩu_ne : (((fun p : ℝ × ℝ => u p.1 p.2) '' (Ω_T l T)) : Set ℝ).Nonempty := by
     rcases h_nonempty with ⟨p, hp⟩
@@ -683,20 +660,26 @@ theorem heat_equation_max_principle
       rcases h_nonempty with ⟨p, hp⟩
       exact ⟨v p.1 p.2, ⟨p, hp, rfl⟩⟩
 
-    have hSbdy_v_bdd : BddAbove ((fun p : ℝ × ℝ => v p.1 p.2) '' (S_boundary l T)) := by
-      simpa using (h_Scompact.image_of_continuousOn (by fun_prop)).bddAbove
-
     have hSbdy_v_ne : (((fun p : ℝ × ℝ => v p.1 p.2) '' (S_boundary l T)) : Set ℝ).Nonempty := by
       rcases h_Snonempty with ⟨p, hp⟩
       exact ⟨v p.1 p.2, ⟨p, hp, rfl⟩⟩
 
-    have Step1 : sSup ((fun p : ℝ × ℝ => v p.1 p.2) '' (Ω_T l T)) = sSup ((fun p : ℝ × ℝ => v p.1 p.2) '' (S_boundary l T)) := by
+    have hSbdy_v_bdd : BddAbove ((fun p : ℝ × ℝ => v p.1 p.2) '' (S_boundary l T)) := by
+      simpa using (h_Scompact.image_of_continuousOn (by fun_prop)).bddAbove
+
+    have Step1 :
+     sSup ((fun p : ℝ × ℝ => v p.1 p.2) '' (Ω_T l T))
+       = sSup ((fun p : ℝ × ℝ => v p.1 p.2) '' (S_boundary l T)) := by
+
       refine le_antisymm (csSup_le hΩv_ne ?_) (csSup_le hSbdy_v_ne ?_)
       · have hv_cont : ContinuousOn (fun p ↦ v p.1 p.2) (Ω_T l T) := by
           dsimp [v]; exact h_cont.add (continuousOn_const.mul (continuousOn_fst.pow 2))
         obtain ⟨s, hs_in, hs_val⟩ := max_v_on_S_boundary (v := v) hT h_compact h_nonempty hv_cont
-          (heat_equation_no_interior_max (ε:=ε) (u:=u) (v:=v) hα hv_def h_smooth h_int_nhds <| heat_equation_perturbation_ineq hα hε hv_def h_smooth h_pde)
-          (heat_equation_no_top_edge_max (ε:=ε) (u:=u) (v:=v) hT hl hα hε hv_def h_smooth h_pde)
+          (heat_equation_no_interior_max
+            (ε:=ε) (u:=u) (v:=v) hα hv_def h_smooth h_int_nhds <|
+              heat_equation_perturbation_ineq hα hε hv_def h_smooth h_pde)
+          (heat_equation_no_top_edge_max
+            (ε:=ε) (u:=u) (v:=v) hT hl hα hε hv_def h_smooth h_pde)
         rintro _ ⟨p, hp, rfl⟩
         exact (hs_val p hp).trans (le_csSup hSbdy_v_bdd ⟨s, hs_in, rfl⟩)
       · rintro _ ⟨p, hp, rfl⟩
@@ -738,7 +721,7 @@ theorem heat_equation_max_principle
       apply le_of_forall_pos_le_add
       intro δ hδ
       linarith [main_step (δ / l ^ 2) (by positivity),
-                div_mul_cancel₀ δ (pow_ne_zero 2 hl.ne')]
+                  div_mul_cancel₀ δ (pow_ne_zero 2 hl.ne')]
 
   have Step5 :
       sSup ((fun p : ℝ × ℝ => u p.1 p.2) '' (Ω_T l T)) ≥
@@ -755,3 +738,58 @@ theorem heat_equation_max_principle
 
 
 end HeatEquation
+
+------------------------------------------------------------------
+  -- Lemmas: Auxiliary (Not used in this file)
+  --
+  -- If f is continous on [a, b] and f is a constant c on (a, b), then
+  --f(x) = c on [a, b]
+
+  --If f is continous on [a, b] and f is a constant c on (a, b), then
+  --f(a) = f(b) = c.
+
+  --If f, g are continous on [a, b] and f = g on (a, b), then
+  --f(a) = g(a), f(b) = g(b).
+------------------------------------------------------------------
+
+theorem eq_const_on_Icc_of_eq_const_on_Ioo
+    {f : ℝ → ℝ} {a b c : ℝ}
+    (hab : a < b)
+    (hcont : ContinuousOn f (Set.Icc a b))
+    (hconst : Set.EqOn f (fun _ => c) (Set.Ioo a b)) :
+    Set.EqOn f (fun _ => c) (Set.Icc a b) := by
+  simpa [closure_Ioo hab.ne] using
+    ContinuousWithinAt.eqOn_const_closure
+      (fun x hx =>
+        (hcont x (by simpa [closure_Ioo hab.ne] using hx)).mono
+          (by intro y hy; exact ⟨le_of_lt hy.1, le_of_lt hy.2⟩))
+      hconst
+
+theorem endpoint_eq_const_of_eq_const_on_Ioo
+    {f : ℝ → ℝ} {a b c : ℝ}
+    (hab : a < b)
+    (hcont : ContinuousOn f (Set.Icc a b))
+    (hconst : Set.EqOn f (fun _ => c) (Set.Ioo a b)) :
+    f a = c ∧ f b = c := by
+  have hIcc : Set.EqOn f (fun _ => c) (Set.Icc a b) :=
+    eq_const_on_Icc_of_eq_const_on_Ioo hab hcont hconst
+  constructor
+  · exact hIcc ⟨le_rfl, le_of_lt hab⟩
+  · exact hIcc ⟨le_of_lt hab, le_rfl⟩
+
+theorem endpoint_eq_of_eq_on_Ioo
+    {f g : ℝ → ℝ} {a b : ℝ}
+    (hab : a < b)
+    (hf : ContinuousOn f (Set.Icc a b))
+    (hg : ContinuousOn g (Set.Icc a b))
+    (h : Set.EqOn f g (Set.Ioo a b)) :
+    f a = g a ∧ f b = g b := by
+  rcases
+    endpoint_eq_const_of_eq_const_on_Ioo
+      hab
+      (hf.sub hg)
+      (by
+        intro x hx
+        exact sub_eq_zero.mpr (h hx))
+  with ⟨ha, hb⟩
+  exact ⟨sub_eq_zero.mp ha, sub_eq_zero.mp hb⟩
