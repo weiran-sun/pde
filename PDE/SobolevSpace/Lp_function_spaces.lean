@@ -73,8 +73,6 @@ lemma HasCompactSupport.smul {α β : Type*}
      hf.mono (Function.support_const_smul_subset c f)
 
 
--- REUSABLE
-
 --------------Lp_loc and Cc_infty in U ⊆ R^d--------------------------------
 
 -- REUSABLE
