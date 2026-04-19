@@ -75,7 +75,6 @@ lemma HasCompactSupport.smul {α β : Type*}
 
 --------------Lp_loc and Cc_infty in U ⊆ R^d--------------------------------
 
--- REUSABLE
 @[reducible] 
 -- Local Lp functions 
 
@@ -155,7 +154,6 @@ noncomputable def Cc_inftyU (d : ℕ)(U : Set (Fin d → ℝ)) : Submodule ℝ (
 
 --------------Lp_loc and Cc_infty in R^d--------------------------------
 
--- Make Lp_loc into a real vector space
 noncomputable def Lp_loc (d : ℕ+) (p : ℝ≥0∞) : Submodule ℝ ((Fin d → ℝ) →ₘ[volume] ℝ) where
   -- A function belongs to Lp_loc if it lies in ℒᵖ after restricting the Lebesgue measure to every compact set.
   carrier := { f | (∀ (C : Set (Fin d → ℝ)), IsCompact C → MemLp f p (volume.restrict C))}
