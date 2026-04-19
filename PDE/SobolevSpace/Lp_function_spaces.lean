@@ -80,7 +80,7 @@ lemma HasCompactSupport.smul {α β : Type*}
 -- REUSABLE
 @[reducible] -- https://proofassistants.stackexchange.com/a/2458
 -- Local Lp functions https://en.wikipedia.org/wiki/Locally_integrable_function
--- An AddSubgroup of the (global) L¹ space ((Fin d → ℝ) →ₘ[volume] ℝ).
+-- An AddSubmodule of the (global) L¹ space ((Fin d → ℝ) →ₘ[volume] ℝ).
 -- m is a notation of measure “almost everywhere”
 -- "volume": mathlib built-in, whose dimension is automatically inferred
 
