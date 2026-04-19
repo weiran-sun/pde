@@ -78,11 +78,8 @@ lemma HasCompactSupport.smul {α β : Type*}
 --------------Lp_loc and Cc_infty in U ⊆ R^d--------------------------------
 
 -- REUSABLE
-@[reducible] -- https://proofassistants.stackexchange.com/a/2458
--- Local Lp functions https://en.wikipedia.org/wiki/Locally_integrable_function
--- An AddSubmodule of the (global) L¹ space ((Fin d → ℝ) →ₘ[volume] ℝ).
--- m is a notation of measure “almost everywhere”
--- "volume": mathlib built-in, whose dimension is automatically inferred
+@[reducible] 
+-- Local Lp functions 
 
 noncomputable def Lp_locU (d : ℕ+) (p : ℝ≥0∞) (U : Set (Fin d → ℝ)) : Submodule ℝ ((Fin d → ℝ) →ₘ[volume] ℝ) where
   -- A function belongs to Lp_loc if it lies in ℒᵖ after restricting the Lebesgue measure to every compact set.
