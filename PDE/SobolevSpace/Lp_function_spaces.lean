@@ -219,8 +219,3 @@ noncomputable def Cc_infty (d : ℕ) : Submodule ℝ ((Fin d → ℝ) → ℝ) w
   ------------------------
   smul_mem' a f hf:= by
     exact ⟨HasCompactSupport.smul hf.1, ContDiff.const_smul a hf.2⟩
-
-
-
--- theorem contDiff_infty_test : ContDiff 𝕜 ∞ f ↔ ∀ n : ℕ, ContDiff 𝕜 n f := by
---   simp [contDiffOn_univ.symm, contDiffOn_infty]
