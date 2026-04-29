@@ -291,7 +291,7 @@ lemma pointwise_bound_HKx
         · norm_num [ Real.sqrt_eq_zero_of_nonpos, Real.pi_pos.le, ‹_› ];
           norm_num [ Real.sqrt_eq_zero_of_nonpos ( show α * t ≤ 0 by linarith ), Real.sqrt_eq_zero_of_nonpos ( show α⁻¹ * t⁻¹ ≤ 0 by nlinarith [ inv_mul_cancel₀ ( show α ≠ 0 by aesop ), inv_mul_cancel₀ ( show t ≠ 0 by aesop ) ] ) ];
         · field_simp;
-          rw [ Real.sqrt_mul <| by positivity, Real.sqrt_mul <| by positivity ] ; ring;
+          rw [ Real.sqrt_mul <| by positivity, Real.sqrt_mul <| by positivity ] ; ring_nf;
           rw [ show α * t = ( α⁻¹ * t⁻¹ ) ⁻¹ by group, Real.sqrt_inv ]
           norm_num [ ← mul_assoc, ← Real.sqrt_div_self ]
           grind
