@@ -46,7 +46,7 @@ import Mathlib.Dynamics.Ergodic.MeasurePreserving
 import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Geometry.Manifold.Metrizable
 
-import PDE.SobolevSpace.Rev_Lp_function_spaces
+import PDE.SobolevSpace.Lp_function_spaces
 
 
 open Real
