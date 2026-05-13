@@ -63,3 +63,7 @@ library_facet literate lib : Array System.FilePath := do
   let modJobs ← mods.mapM (·.facet `literate |>.fetch)
   let out ← modJobs.mapM (·.await)
   pure (.pure out)
+
+require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
+
+require LeanArchitect from git "https://github.com/hanwenzhu/LeanArchitect.git" @ "v4.27.0"

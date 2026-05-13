@@ -57,6 +57,7 @@ lemma heatKernel_even :
 
 /-- **Translation Invariance**: The heat kernel integrates to 1 regardless of translation. --/
 
+@[blueprint "lem:heatKernel_mass_one_x_sub_y_even" (statement := /-- The heat kernel integrates to 1 regardless of translation. -/)]
 lemma heatKernel_mass_one_x_sub_y_even
     (x : ℝ) (hα : 0 < α) (ht : 0 < t) : ∫ y, heatKernel α (x - y) t = (1 : ℝ) := by
   have hfun :
@@ -64,7 +65,7 @@ lemma heatKernel_mass_one_x_sub_y_even
         = (fun y : ℝ => heatKernel α (y - x) t) := by
         unfold heatKernel
         field_simp
-        exact funext fun y => by ring;
+        exact funext fun y => by ring_nf;
   have h_translate :
       ∫ y, heatKernel α (y - x) t = ∫ y, heatKernel α y t := by
     -- `y - x = (-x) + y`
@@ -93,6 +94,7 @@ maximum and minimum temperatures can only decrease over time. --/
 
 noncomputable def Lmul : ℝ →L[ℝ] ℝ →L[ℝ] ℝ := ContinuousLinearMap.mul ℝ ℝ
 
+@[blueprint "lem:heat_maximum_principle" (statement := /-- If the initial data g satisfies |g(y)| ≤ B for all y, then the solution at any later time and position also satisfies |u(x,t)| ≤ B. -/)]
 lemma heat_maximum_principle
     (x : ℝ) {α t B : ℝ}
     (hα : 0 < α) (ht : 0 < t)
@@ -138,6 +140,7 @@ which are needed to prove that the solution converges to the initial data as t �
     Transforms the integral ∫_{|y-x| ≥ δ} Φ(x-y,t) dy into a standard Gaussian
     tail integral via the substitution z = (x-y)/√(4αt). -/
 
+@[blueprint "lem:heatTail_changeOfVariables" (statement := /-- Transforms the integral ∫_{|y-x| ≥ δ} Φ(x-y,t) dy into a standard Gaussian tail integral via the substitution z = (x-y)/√(4αt). -/)]
 lemma heatTail_changeOfVariables
     {α x δ t : ℝ} (hα : 0 < α) (ht : 0 < t) :
   (∫ y, Set.indicator {y : ℝ | δ ≤ |y - x|}
@@ -192,15 +195,18 @@ lemma heatTail_changeOfVariables
 def IsBoundedAbs (g : ℝ → ℝ) : Prop := ∃ B, ∀ y, |g y| ≤ B
 
 /-- Integrability of z² exp(-z²). Used in Gaussian tail bounds. -/
+-- @[blueprint "lem:int_z_sq_exp_z_sq" (statement := /-- Integrability of z² exp(-z²). Used in Gaussian tail bounds. -/)]
 lemma int_z_sq_exp_z_sq : Integrable (fun z : ℝ => |z|^2 * Real.exp (-z^2)) := by
       simpa [one_mul] using integrable_rpow_mul_exp_neg_mul_sq (by norm_num : 0 < (1 : ℝ))
           (by norm_num : (-1 : ℝ) < (2 : ℝ))
 
 /-- The "far" region {y : |y - x| ≥ δ} is measurable. -/
+-- @[blueprint "lem:far_measurable" (statement := /-- The "far" region {y : |y - x| ≥ δ} is measurable. -/)]
 lemma far_measurable (δ x : ℝ) : MeasurableSet ({y | δ ≤ |y - x|} : Set ℝ) := by
   simpa using measurableSet_le measurable_const (measurable_id.sub_const x).abs
 
 /-- Helper lemma for splitting integrals into near and far regions. -/
+-- @[blueprint "lem:integral_split_near_far" (statement := /-- Helper lemma for splitting integrals into near and far regions. -/)]
 lemma integral_split_near_far {α x t : ℝ} (g : ℝ → ℝ) (far : Set ℝ)
     (hα : 0 < α) (ht : 0 < t)
     (hg : Integrable g) (h_meas_far : MeasurableSet far):
@@ -223,6 +229,7 @@ lemma integral_split_near_far {α x t : ℝ} (g : ℝ → ℝ) (far : Set ℝ)
   exact (integral_add_compl (s := far) h_meas_far h_int).symm.trans (by rw [add_comm])
 
 /-- For even functions, the two-sided tail integral equals twice the one-sided integral. -/
+-- @[blueprint "lem:integral_indicator_tail_even" (statement := /-- For even functions, the two-sided tail integral equals twice the one-sided integral. -/)]
 lemma integral_indicator_tail_even {f : ℝ → ℝ} {R : ℝ} (hR : 0 < R)
     (heven : ∀ x, f (-x) = f x)
     (hint : IntegrableOn f (Set.Ici R)) :
@@ -294,6 +301,7 @@ lemma integral_indicator_tail_even {f : ℝ → ℝ} {R : ℝ} (hR : 0 < R)
   rw [h_left_eq_right, integral_indicator measurableSet_Ici, ← two_mul]
 
 /-- Evaluation of ∫₀^∞ z exp(-z²) dz = 1/2. -/
+-- @[blueprint "lem:integral_mul_exp_neg_sq_Ici_zero" (statement := /-- Evaluation of ∫₀^∞ z exp(-z²) dz = 1/2. -/)]
 lemma integral_mul_exp_neg_sq_Ici_zero : ∫ z in Set.Ici 0, z * Real.exp (-z^2) = 1 / 2 := by
   have Comp_exp_Real: ∫ x : ℝ in Set.Ioi 0, (x : ℂ) * Complex.exp (-(x : ℂ) ^ 2)
      = ∫ x : ℝ in Set.Ioi 0, x * Real.exp (-x ^ 2) := by
@@ -309,6 +317,7 @@ lemma integral_mul_exp_neg_sq_Ici_zero : ∫ z in Set.Ici 0, z * Real.exp (-z^2)
 
     This is the analytical estimate that allows us to bound Gaussian tail integrals
     and prove convergence as t → 0. -/
+@[blueprint "lem:gaussian_tail_bound_by_weighted" (statement := /-- Analytical estimate that allows us to bound Gaussian tail integrals and prove convergence as t → 0. -/)]
 lemma gaussian_tail_bound_by_weighted {R : ℝ} (hR : 0 < R) :
     ∫ z in Set.Ici R, Real.exp (-z^2) ≤ (1 / R) * ∫ z in Set.Ici 0, z * Real.exp (-z^2) := by
   have h_gauss_int : Integrable (fun z => Real.exp (-z^2)) := by
@@ -384,6 +393,7 @@ The proof follows the textbook approach:
 5. **Choose t small enough**: For t < δ₀, have C√t < ε/2, giving total < ε.
 -/
 
+@[blueprint "thm:heatKernel_IVP_limit_textbook" (statement := /-- Given bounded, continuous, integrable initial data g, the solution u(x,t) = ∫ Φ(x-y,t) g(y) dy converges to g(x) as t → 0⁺. -/)]
 theorem heatKernel_IVP_limit_textbook
     {α : ℝ} (g : ℝ → ℝ) (x : ℝ)
     (hα : 0 < α)

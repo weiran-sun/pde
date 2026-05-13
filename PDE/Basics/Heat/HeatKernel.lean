@@ -4,6 +4,7 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.Topology.Basic
 import Mathlib.Analysis.Calculus.ParametricIntegral
+import Architect
 
 /-!
 # The Heat Kernel and the 1D Heat Equation
@@ -43,39 +44,47 @@ variable (α t : ℝ)
     For `α > 0` and `t > 0`, this function gives the temperature distribution at time `t`
     resulting from a unit point source at `x = 0` at time `t = 0`. -/
 
+@[blueprint "def:heatKernel" (statement := /-- Heat Kernel $\frac{1}{\sqrt{4 \pi \alpha t}} e^{-\frac{x^2}{4 \alpha t}}$. -/)]
 noncomputable def heatKernel (α : ℝ) (x t : ℝ) : ℝ :=
   (1 / Real.sqrt (4 * Real.pi * α * t)) * Real.exp (-(x^2) / (4 * α * t))
 
 
 /-- Helper constant `k = 4πα` used in the normalization factor. -/
+@[blueprint "def:heatK" (statement := /-- Helper constant $k = 4 \pi \alpha$ used in the normalization factor. -/)]
 noncomputable def heatK (α : ℝ) : ℝ := 4 * Real.pi * α
 
 
 /-- The coefficient `a(α,t) = 1/(4αt)` appearing in the exponential term. -/
+-- @[simp, blueprint "def:a" (statement := /-- The coefficient $a(\alpha, t)=\frac{1}{4 \alpha t}$ appearing in the exponential term. -/)]
 @[simp]
 noncomputable def a (α : ℝ) (t : ℝ) : ℝ := 1 / (4 * α * t)
 
 
 /-- The normalization constant `c(α,t) = 1/√(4παt)`. -/
+-- @[simp, blueprint "def:c" (statement := /-- The normalization constant $c(\alpha,t) = \frac{1}{\sqrt{4 \pi \alpha t}}$. -/)]
 @[simp]
 noncomputable def c (α : ℝ) (t : ℝ) : ℝ := 1 / Real.sqrt ((heatK α) * t)
 
 
 /-! ## Basic Properties and Positivity -/
 
+@[blueprint "lem:heatK_pos" (statement := /-- Positivity of the helper constant $k = 4 \pi \alpha$. -/)]
 lemma heatK_pos {α : ℝ} (hα : α > 0) : heatK α > 0 := by
   unfold heatK; positivity
 
 
+-- @[blueprint "lem:a_pos" (statement := /-- Positivity of the coefficient $a(\alpha,t) = \frac{1}{4 \alpha t}$. -/)]
 lemma a_pos {α t : ℝ} (hα : α > 0) (ht : t > 0) : a α t > 0 := by
   unfold a; positivity
 
 
+-- @[blueprint "lem:c_pos" (statement := /-- Positivity of the coefficient $c(\alpha,t) = \frac{1}{\sqrt{4 \pi \alpha t}}$. -/)]
 lemma c_pos {α t : ℝ} (hα : α > 0) (ht : t > 0) : c α t > 0 := by
   unfold c heatK; positivity
 
 
 /-- **Property 1**: The heat kernel is strictly positive for all `x` when `α > 0` and `t > 0`. -/
+@[blueprint "lem:heatKernel_pos" (statement := /-- Positivity of the heat kernel. -/)]
 lemma heatKernel_pos {x : ℝ} (hα : 0 < α) (ht : 0 < t) :
     0 < heatKernel α x t := by
   unfold heatKernel
@@ -88,6 +97,7 @@ lemma heatKernel_pos {x : ℝ} (hα : 0 < α) (ht : 0 < t) :
 
     This shows that the heat kernel is properly normalized and can be interpreted
     as a probability density function (specifically, a Gaussian distribution). -/
+@[blueprint "lem:integral_heatKernel_one_gaussian" (statement := /-- Integral of the heat kernel over all of ℝ is one. -/)]
 lemma integral_heatKernel_one_gaussian (hα : 0 < α) (ht : 0 < t) :
     ∫ x : ℝ, heatKernel α x t = 1 := by
   let b := 1 / (4 * α * t)
@@ -113,6 +123,7 @@ section Derivatives
 /-! ### Helper Lemmas for Derivatives -/
 
 /-- Derivative of `1/√x` at a positive point. -/
+@[blueprint "lem:deriv_sqrt_inv" (statement := /-- Derivative of $\frac{1}{\sqrt{x}}$ at a positive point. -/)]
 lemma deriv_sqrt_inv {x : ℝ} (hx : x > 0) :
     HasDerivAt (fun τ => 1 / Real.sqrt τ)
                 (-(1 / (2 * x)) * (1 / Real.sqrt x)) x := by
@@ -129,6 +140,7 @@ lemma deriv_sqrt_inv {x : ℝ} (hx : x > 0) :
 
 
 /-- Derivative of the exponential term `exp(-(x²)/(4αt))` with respect to `x`. -/
+@[blueprint "lem:deriv_exp_heatKernel" (statement := /-- Derivative of the exponential term $e^{-\frac{x^2}{4 \alpha t}}$ with respect to `x`. -/)]
 lemma deriv_exp_heatKernel {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
     HasDerivAt (fun x' => Real.exp (-(x'^2) / (4 * α * t)))
                 ((-(1 / (4 * α * t)) * (2 * x)) * Real.exp (-(x^2) / (4 * α * t))) x := by
@@ -145,6 +157,7 @@ lemma deriv_exp_heatKernel {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
 /-! ### Time Derivative -/
 
 /-- The time derivative of the heat kernel `∂/∂t heatKernel(α, x, t)`. -/
+@[blueprint "lem:hasDerivAt_heatKernel_t" (statement := /-- Derivative of the heat kernel with respect to time `∂/∂t heatKernel(α, x, t)`. -/)]
 lemma hasDerivAt_heatKernel_t (hα : 0 < α) {t x : ℝ} (ht : 0 < t) :
     HasDerivAt (fun τ => heatKernel α x τ)
       ((-(1 / (2 * t)) * (1 / Real.sqrt (4 * Real.pi * α * t))) *
@@ -186,6 +199,7 @@ lemma hasDerivAt_heatKernel_t (hα : 0 < α) {t x : ℝ} (ht : 0 < t) :
 /-! ### First Spatial Derivative -/
 
 /-- The first spatial derivative of the heat kernel `∂/∂x heatKernel(α, x, t)`. -/
+@[blueprint "lem:hasDerivAt_heatKernel_x" (statement := /-- Derivative of the heat kernel with respect to space `∂/∂x heatKernel(α, x, t)`. -/)]
 lemma hasDerivAt_heatKernel_x {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
     HasDerivAt (fun x' => heatKernel α x' t)
       ((1 / Real.sqrt (4 * Real.pi * α * t)) * (-(1 / (4 * α * t)) * (2 * x)) *
@@ -198,6 +212,7 @@ lemma hasDerivAt_heatKernel_x {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
 /-! ### Second Spatial Derivative -/
 
 /-- Auxiliary lemma: derivative of the first spatial derivative's formula. -/
+@[blueprint "lem:hasDerivAt_heatKernel_x_x" (statement := /-- Auxiliary lemma: derivative of the first spatial derivative's formula. -/)]
 lemma hasDerivAt_heatKernel_x_x {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
     HasDerivAt
       (fun x' => (1 / Real.sqrt (4 * Real.pi * α * t)) *
@@ -231,6 +246,7 @@ lemma hasDerivAt_heatKernel_x_x {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
 
 
 /-- The second spatial derivative of the heat kernel `∂²/∂x² heatKernel(α, x, t)`. -/
+@[blueprint "lem:hasDerivAt_heatKernel_xx" (statement := /-- The second spatial derivative of the heat kernel `∂²/∂x² heatKernel(α, x, t)`.-/)]
 lemma hasDerivAt_heatKernel_xx {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
     HasDerivAt
       (fun x' => deriv (fun x'' => heatKernel α x'' t) x')
@@ -266,6 +282,7 @@ This is the fundamental property that makes it the fundamental solution to the h
     This establishes that the heat kernel is indeed the fundamental solution
     to the one-dimensional heat equation. -/
 
+@[blueprint "thm:heatKernel_solves_heat_eq" (statement := /-- The heat kernel satisfies the one-dimensional heat equation $∂u/∂t = α ∂²u/∂x²$. -/)]
 theorem heatKernel_solves_heat_eq (hα : 0 < α) {t x : ℝ} (ht : 0 < t) :
     deriv (fun τ => heatKernel α x τ) t
       = α * deriv (fun x' => deriv (fun x'' => heatKernel α x'' t) x') x := by

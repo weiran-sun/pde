@@ -42,21 +42,25 @@ shorthand notation for the partial derivatives of the heat kernel.
 -/
 
 /-- The convolution of the heat kernel with an initial data function `g`. -/
+@[blueprint "def:heatConvolutionHK" (statement := /-- The convolution of the heat kernel with an initial data function `g`. -/)]
 noncomputable def heatConvolutionHK (α : ℝ) (g : ℝ → ℝ) (x t : ℝ) : ℝ :=
   ∫ y, heatKernel α (x - y) t * g y
 
 
 /-- Partial derivative of the heat kernel with respect to time $t$. -/
+@[blueprint "def:HKt" (statement := /-- Partial derivative of the heat kernel with respect to time $t$. -/)]
 noncomputable def HKt (α : ℝ) (x t : ℝ) : ℝ :=
   deriv (fun τ => heatKernel α x τ) t
 
 
 /-- Partial derivative of the heat kernel with respect to space $x$. -/
+@[blueprint "def:HKx" (statement := /-- Partial derivative of the heat kernel with respect to space $x$. -/)]
 noncomputable def HKx (α : ℝ) (x t : ℝ) : ℝ :=
   deriv (fun ξ => heatKernel α ξ t) x
 
 
 /-- Second partial derivative of the heat kernel with respect to space $x$. -/
+@[blueprint "def:HKxx" (statement := /-- Second partial derivative of the heat kernel with respect to space $x$. -/)]
 noncomputable def HKxx (α : ℝ) (x t : ℝ) : ℝ :=
   deriv (fun x' => HKx α x' t) x
 
@@ -70,17 +74,20 @@ We use the explicit calculations of the derivatives of the Heat Kernel from the
 previous chapter and make them consistent with the notation `HKt`, `HKx`, `HKxx`
 -/
 
+@[blueprint "lem:HKt_eq_derivative" (statement := /-- Explicit derivative formula for the partial derivative of the heat kernel with respect to time $t$. -/)]
 lemma HKt_eq_derivative (hα : 0 < α) {t x : ℝ} (ht : 0 < t) :
     HKt α x t = (-(1 / (2 * t)) * (1 / Real.sqrt (4 * Real.pi * α * t))) * Real.exp (-(x^2) / (4 * α * t))
       + (1 / Real.sqrt (4 * Real.pi * α * t)) * (((1 : ℝ) / (4 * α)) * (1 / (t ^ 2)) * x ^ 2) * Real.exp (-(x^2) / (4 * α * t))
       := (hasDerivAt_heatKernel_t α hα ht).deriv
 
 
+@[blueprint "lem:HKx_eq_derivative" (statement := /-- Explicit derivative formula for the partial derivative of the heat kernel with respect to space $x$. -/)]
 lemma HKx_eq_derivative {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
     HKx α x t = (1 / Real.sqrt (4 * Real.pi * α * t)) * (-(1 / (4 * α * t)) * (2 * x)) * Real.exp (-(x^2) / (4 * α * t))
       := (hasDerivAt_heatKernel_x ht hα).deriv
 
 
+@[blueprint "lem:HKxx_eq_derivative" (statement := /-- Explicit derivative formula for the second partial derivative of the heat kernel with respect to space $x$. -/)]
 lemma HKxx_eq_derivative {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
   HKxx α x t
     = (1 / Real.sqrt (4 * Real.pi * α * t)) *
@@ -102,38 +109,46 @@ differentiate under the integral.
 
 section Regularity
 
+@[blueprint "lem:cont_HKt" (statement := /-- Continuity of the partial derivative of the heat kernel with respect to time $t$. -/)]
 lemma cont_HKt {α x t : ℝ} (hα : 0 < α) (ht : 0 < t) :
   Continuous (fun y : ℝ => HKt α (x-y) t) := by
   simp_rw [HKt_eq_derivative hα ht]
   continuity
 
+@[blueprint "lem:meas_HKt" (statement := /-- Measurability of the partial derivative of the heat kernel with respect to time $t$. -/)]
 lemma meas_HKt {α x t : ℝ} (hα : 0 < α) (ht : 0 < t) :
   AEStronglyMeasurable (fun y : ℝ => HKt α (x-y) t) :=
   (cont_HKt hα ht).aestronglyMeasurable
 
+@[blueprint "lem:cont_HKx" (statement := /-- Continuity of the partial derivative of the heat kernel with respect to space $x$. -/)]
 lemma cont_HKx {α x t : ℝ}(hα : 0 < α) (ht : 0 < t):
   Continuous (fun y : ℝ => HKx α (x - y) t) := by
   simp_rw [HKx_eq_derivative ht hα]
   continuity
 
+@[blueprint "lem:meas_HKx" (statement := /-- Measurability of the partial derivative of the heat kernel with respect to space $x$. -/)]
 lemma meas_HKx {α x t : ℝ}(hα : 0 < α) (ht : 0 < t):
   AEStronglyMeasurable (fun y : ℝ => HKx α (x - y) t) :=
   (cont_HKx hα ht).aestronglyMeasurable
 
+@[blueprint "lem:cont_HKxx" (statement := /-- Continuity of the second partial derivative of the heat kernel with respect to space $x$. -/)]
 lemma cont_HKxx {α x t : ℝ}(hα : 0 < α) (ht : 0 < t) :
     Continuous (fun y : ℝ => HKxx α (x - y) t) := by
   simp_rw [HKxx_eq_derivative ht hα]
   continuity
 
+@[blueprint "lem:meas_HKxx" (statement := /-- Measurability of the second partial derivative of the heat kernel with respect to space $x$. -/)]
 lemma meas_HKxx {α x t : ℝ}(hα : 0 < α) (ht : 0 < t) :
     AEStronglyMeasurable (fun y : ℝ => HKxx α (x - y) t) :=
   (cont_HKxx (α := α) (t:= t) (x := x) hα ht).aestronglyMeasurable
 
+@[blueprint "lem:cont_heatKernel" (statement := /-- Continuity of the heat kernel. -/)]
 lemma cont_heatKernel {α x t : ℝ} :
   Continuous (fun y : ℝ => heatKernel α (x-y) t) := by
   unfold heatKernel
   continuity
 
+@[blueprint "lem:meas_heatKernel" (statement := /-- Measurability of the heat kernel. -/)]
 lemma meas_heatKernel {α x t : ℝ} :
   AEStronglyMeasurable (fun y : ℝ => heatKernel α (x-y) t) :=
   (cont_heatKernel).aestronglyMeasurable
@@ -150,14 +165,17 @@ This implies they belong to $L^\infty$.
 noncomputable section Bounds
 
 
+-- @[blueprint "def:Kx" (statement := /-- Helper constant: Upper bound of partial derivative of the heat kernel with respect to space $x$. -/)]
 noncomputable def Kx (α t : ℝ) : ℝ :=
   1 / (2 * Real.sqrt Real.pi * α * t)
 
 
+-- @[blueprint "def:Kxx" (statement := /-- Helper constant: Upper bound of second partial derivative of the heat kernel with respect to space $x$. -/)]
 noncomputable def Kxx (α t : ℝ) : ℝ :=
   (1 + 2 * Real.exp (-1)) / (2 * α * t * Real.sqrt (4 * Real.pi * α * t))
 
 
+@[blueprint "lem:heatKernel_bound_pointwise" (statement := /-- Heat kernel is bounded: 1) non-negative; 2) its maximum value $1 / \sqrt{4 \pi \alpha t}$ is achieved at $x=y$. This maximum decays to zero as $t \rightarrow \infty$. -/)]
 lemma heatKernel_bound_pointwise {α x t : ℝ}
     (hα : 0 < α) (ht : 0 < t) :
     ∀ y, heatKernel α (x - y) t ≥ 0 ∧
@@ -178,6 +196,7 @@ lemma heatKernel_bound_pointwise {α x t : ℝ}
       simpa [one_mul] using mul_le_mul_of_nonneg_left hexp_le_one K_nonneg
 
 
+@[blueprint "lem:Linfty_heatKernel" (statement := /-- Heat kernel is bounded in $L^\infty$. -/)]
 lemma Linfty_heatKernel{α x t : ℝ} (hα : 0 < α) (ht : 0 < t) :
   MemLp (fun y : ℝ => heatKernel α (x-y) t) ∞ volume := by
   refine memLp_top_of_bound (meas_heatKernel)
@@ -192,6 +211,7 @@ lemma Linfty_heatKernel{α x t : ℝ} (hα : 0 < α) (ht : 0 < t) :
 -- Technical lemmas for bounds
 
 
+@[blueprint "lem:bound_x_exp_neg_x" (statement := /-- $x \cdot e^{-x} \leq e$. -/)]
 lemma bound_x_exp_neg_x {x : ℝ} :
   x * Real.exp (-x) ≤ Real.exp (-1) := by
   have hx : x ≤ Real.exp (x - 1) := by
@@ -200,6 +220,7 @@ lemma bound_x_exp_neg_x {x : ℝ} :
     (mul_le_mul_of_nonneg_right hx (le_of_lt (Real.exp_pos (-x))))
 
 
+@[blueprint "lem:sq_mul_exp_neg_mul_sq_le" (statement := /-- $x^2 \cdot e^{-b x^2} \leq \frac{e^{-1}}{b}$. -/)]
 lemma sq_mul_exp_neg_mul_sq_le (hb : 0 < b) (x : ℝ) :
     x^2 * Real.exp (-(b * x^2)) ≤ Real.exp (-1) / b := by
   have h := bound_x_exp_neg_x (x := b * x^2)
@@ -211,6 +232,7 @@ lemma sq_mul_exp_neg_mul_sq_le (hb : 0 < b) (x : ℝ) :
     _ = Real.exp (-1) / b := by ring
 
 
+@[blueprint "lem:pointwise_bound_HKt" (statement := /-- Bound of partial derivative of the heat kernel with respect to time $t$. -/)]
 lemma pointwise_bound_HKt {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
   |HKt α x t| ≤ (3/(2*t)) * (c α t) := by
    simp_rw [HKt_eq_derivative (α:=α) (x:=x) (t:=t) hα ht]
@@ -250,6 +272,7 @@ lemma pointwise_bound_HKt {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
         _ = 3 / (2 * t) * (1 / √(4 * Real.pi * α * t)) := by ring
 
 
+@[blueprint "lem:HKt_Linfinity_bound" (statement := /-- Partial derivative of the heat kernel with respect to time $t$ is bounded in $L^\infty$. -/)]
 lemma HKt_Linfinity_bound {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
     MemLp (fun y => HKt α (x - y) t) ∞ volume := by
   refine memLp_top_of_bound (meas_HKt hα ht) ((3/(2*t)) * (c α t)) ?_
@@ -257,6 +280,7 @@ lemma HKt_Linfinity_bound {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
   exact pointwise_bound_HKt ht hα
 
 
+@[blueprint "lem:pointwise_bound_HKx" (statement := /-- Bound of partial derivative of the heat kernel with respect to space $x$. -/)]
 lemma pointwise_bound_HKx
   {α x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
   |HKx α x t| ≤ Kx α t := by
@@ -297,6 +321,7 @@ lemma pointwise_bound_HKx
           grind
 
 
+@[blueprint "lem:HKx_Linfinity_bound" (statement := /-- Partial derivative of the heat kernel with respect to space $x$ is bounded in $L^\infty$. -/)]
 lemma HKx_Linfinity_bound {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
     MemLp (fun y => HKx α (x - y) t) ∞ volume := by
   refine memLp_top_of_bound (meas_HKx hα ht) (Kx α t) ?_
@@ -304,6 +329,7 @@ lemma HKx_Linfinity_bound {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
   exact pointwise_bound_HKx ht hα
 
 
+@[blueprint "lem:HKxx_uniform_bound" (statement := /-- Bound of second partial derivative of the heat kernel with respect to space $x$. -/)]
 lemma HKxx_uniform_bound {α t : ℝ} (hα : 0 < α) (ht : 0 < t) :
     ∀ x, |HKxx α x t| ≤ Kxx α t := by
   intro x
@@ -343,7 +369,7 @@ lemma HKxx_uniform_bound {α t : ℝ} (hα : 0 < α) (ht : 0 < t) :
           simpa using mul_le_mul_of_nonneg_left hexp_le_one (by positivity)
         have h2 : 4 * (a α t)^2 * x^2 * Real.exp (-(a α t) * x^2) ≤ 4 * (a α t) * Real.exp (-1)  := by
           rw [show 4 * (a α t)^2 * x^2 * Real.exp (-(a α t) * x^2) =
-                  4 * a α t * ((a α t * x^2) * Real.exp (-((a α t) * x^2))) by ring]
+                  4 * a α t * ((a α t * x^2) * Real.exp (-((a α t) * x^2))) by ring_nf]
           exact mul_le_mul_of_nonneg_left (bound_x_exp_neg_x (x := a α t * x^2)) (by positivity)
         linarith
 
@@ -379,11 +405,13 @@ lemma HKxx_uniform_bound {α t : ℝ} (hα : 0 < α) (ht : 0 < t) :
   exact hα
 
 
+@[blueprint "lem:pointwise_bound_HKxx" (statement := /-- Second partial derivative of the heat kernel with respect to space $x$ is pointwise bounded. -/)]
 lemma pointwise_bound_HKxx {α x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
     |HKxx α x t| ≤ Kxx α t := by
   exact HKxx_uniform_bound hα ht x
 
 
+@[blueprint "lem:HKxx_Linfinity_bound" (statement := /-- Second partial derivative of the heat kernel with respect to space $x$ is bounded in $L^\infty$. -/)]
 lemma HKxx_Linfinity_bound {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
     MemLp (fun y => HKxx α (x - y) t) ∞ volume := by
   have bound := Kxx α t
@@ -393,6 +421,7 @@ lemma HKxx_Linfinity_bound {α : ℝ} {x t : ℝ} (ht : 0 < t) (hα : 0 < α) :
 
 
 -- Lemma stating that c α t is monotonically decreasing in t
+-- @[blueprint "lem:mono_Coeff" (statement := /-- The normalization constant $c(\alpha,t) = \frac{1}{\sqrt{4 \pi \alpha t}}$ is monotonically decreasing in $t$. -/)]
 lemma mono_Coeff {α : ℝ} {t τ : ℝ} (ht : 0 < t)
   (hτ : 0 < τ) (hα : 0 < α) (hsize: τ ≤ t) : c α t ≤ c α τ
   := by
@@ -413,6 +442,7 @@ multiplied by an integrable function $g$
 
 section Integrability
 
+@[blueprint "lem:integrable_heatKernel" (statement := /-- The heat kernel is integrable. -/)]
 lemma integrable_heatKernel (hα : 0 < α) (ht : 0 < t) :
     Integrable (fun x : ℝ => heatKernel α x t) := by
   by_contra h
@@ -420,6 +450,7 @@ lemma integrable_heatKernel (hα : 0 < α) (ht : 0 < t) :
   simpa [h0] using integral_heatKernel_one_gaussian α t hα ht
 
 
+@[blueprint "lem:integrable_heatKernel_slice" (statement := /-- The heat kernel is integrable for a space slice. -/)]
 lemma integrable_heatKernel_slice
     (hα : 0 < α) (ht : 0 < t) (x : ℝ) :
     Integrable (fun y : ℝ => heatKernel α (x - y) t) := by
@@ -431,6 +462,7 @@ lemma integrable_heatKernel_slice
    exact (integrable_heatKernel hα ht).comp_add_right x |>.comp_neg
 
 
+@[blueprint "lem:integrable_heatKernel_mul_of_Linfty" (statement := /-- The product between heat kernel and a $L^\infty$ bounded function is integrable. -/)]
 lemma integrable_heatKernel_mul_of_Linfty
     {B α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
     (hα : 0 < α) (ht : 0 < t)
@@ -453,6 +485,7 @@ lemma integrable_heatKernel_mul_of_Linfty
          (integrable_heatKernel_slice hα ht x) (Linfty_g)
 
 
+@[blueprint "lem:integrable_heatKernel_mul_of_L1" (statement := /-- The product between heat kernel and an integrable ($L^1$) function is integrable. -/)]
 lemma integrable_heatKernel_mul_of_L1
     {α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
     (hα : 0 < α) (ht : 0 < t)
@@ -461,12 +494,14 @@ lemma integrable_heatKernel_mul_of_L1
    simpa using Integrable.smul_of_top_right hg (Linfty_heatKernel hα ht)
 
 
+@[blueprint "lem:aestronglyMeasurable_heatKernel_mul" (statement := /-- The product between heat kernel and an integrable function is almost everywhere strongly measurable. -/)]
 lemma aestronglyMeasurable_heatKernel_mul
     {α x t : ℝ} (hα : 0 < α) (ht : 0 < t) (g : ℝ → ℝ) (hg : Integrable g volume) :
       AEStronglyMeasurable (fun y : ℝ => heatKernel α (x - y) t * g y) volume:= by
         exact (integrable_heatKernel_mul_of_L1 g hα ht hg).aestronglyMeasurable
 
 
+-- @[blueprint "lem:eventually_aestronglyMeasurable_heatKernel_mul" (statement := /-- The product between heat kernel and an integrable function is almost everywhere strongly measurable. -/)]
 lemma eventually_aestronglyMeasurable_heatKernel_mul
     {α : ℝ} (g : ℝ → ℝ) (hg : Integrable g volume) {x t : ℝ} (ht : 0 < t) :
     ∀ᶠ τ in 𝓝 t, AEStronglyMeasurable (fun y => heatKernel α (x - y) τ * g y) volume := by
@@ -475,6 +510,7 @@ lemma eventually_aestronglyMeasurable_heatKernel_mul
   exact (this.aestronglyMeasurable).mul hg.aestronglyMeasurable
 
 
+@[blueprint "lem:aestronglyMeasurable_HKt_mul" (statement := /-- The product between partial derivative of heat kernel w.r.t. time $t$ and an integrable function is almost everywhere strongly measurable. -/)]
 lemma aestronglyMeasurable_HKt_mul
     {α x t : ℝ} (g : ℝ → ℝ)
     (hg : Integrable g) (hα : 0 < α) (ht : 0 < t) :
@@ -482,6 +518,7 @@ lemma aestronglyMeasurable_HKt_mul
     exact (meas_HKt hα ht).mul hg.aestronglyMeasurable
 
 
+@[blueprint "lem:integ_HKt_mul_of_L1" (statement := /-- The product between partial derivative of heat kernel w.r.t. time $t$ and an integrable ($L^1$) function is integrable. -/)]
 lemma integ_HKt_mul_of_L1
     {α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
     (hα : 0 < α) (ht : 0 < t)
@@ -490,6 +527,7 @@ lemma integ_HKt_mul_of_L1
    simpa using Integrable.smul_of_top_right hg (HKt_Linfinity_bound ht hα)
 
 
+@[blueprint "lem:aestronglyMeasurable_HKx_mul" (statement := /-- The product between partial derivative of heat kernel w.r.t. space $x$ and an integrable ($L^1$) function is almost everywhere strongly measurable. -/)]
 lemma aestronglyMeasurable_HKx_mul
     {α x t : ℝ} (g : ℝ → ℝ)
     (hg : Integrable g)(hα : 0 < α) (ht : 0 < t):
@@ -497,6 +535,7 @@ lemma aestronglyMeasurable_HKx_mul
     exact (meas_HKx hα ht).mul hg.aestronglyMeasurable
 
 
+@[blueprint "lem:integ_HKx_mul_of_L1" (statement := /-- The product between partial derivative of heat kernel w.r.t. space $x$ and an integrable ($L^1$) function is integrable. -/)]
 lemma integ_HKx_mul_of_L1
     {α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
     (hα : 0 < α) (ht : 0 < t)
@@ -505,6 +544,7 @@ lemma integ_HKx_mul_of_L1
    simpa using Integrable.smul_of_top_right hg (HKx_Linfinity_bound ht hα)
 
 
+@[blueprint "lem:aestronglyMeasurable_HKxx_mul" (statement := /-- The product between second partial derivative of heat kernel w.r.t. space $x$ and an integrable ($L^1$) function is almost everywhere strongly measurable. -/)]
 lemma aestronglyMeasurable_HKxx_mul
     {α x t : ℝ} (g : ℝ → ℝ)
     (hg : Integrable g)(ht : 0 < t) (hα : 0 < α):
@@ -512,6 +552,7 @@ lemma aestronglyMeasurable_HKxx_mul
   exact (meas_HKxx hα ht).mul hg.aestronglyMeasurable
 
 
+@[blueprint "lem:integ_HKxx_mul_of_L1" (statement := /-- The product between second partial derivative of heat kernel w.r.t. space $x$ and an integrable ($L^1$) function is integrable. -/)]
 lemma integ_HKxx_mul_of_L1
     {α : ℝ} (g : ℝ → ℝ) {x t : ℝ}
     (hα : 0 < α) (ht : 0 < t)
@@ -531,6 +572,7 @@ bounds established in Section 4.
 
 section SwapDerivatives
 
+@[blueprint "lem:diff_HKt_mul" (statement := /-- The partial derivative w.r.t. time $t$ of the product between heat kernel and an integrable function is the product of the partial derivative w.r.t. time $t$ of the heat kernel and the function. -/)]
 lemma diff_HKt_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 0 < α):
   ∀ᵐ y ∂volume, ∀ τ ∈ Metric.ball t (t/2),
     HasDerivAt (fun τ' => heatKernel α (x - y) τ' * g y) (HKt α (x - y) τ * g y) τ
@@ -546,6 +588,8 @@ lemma diff_HKt_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 
     exact hasDerivAt_heatKernel_t α hα τ_pos
   exact (h_deriv.mul_const (g y))
 
+
+@[blueprint "lem:diff_HKx_mul" (statement := /-- The partial derivative w.r.t. space $x$ of the product between heat kernel and an integrable function is the product of the partial derivative w.r.t. space $x$ of the heat kernel and the function. -/)]
 lemma diff_HKx_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 0 < α):
     ∀ᵐ y ∂volume, ∀ x' ∈ Metric.ball x 1,
       HasDerivAt (fun x'' => heatKernel α (x'' - y) t * g y) (HKx α (x' - y) t * g y) x' := by
@@ -569,6 +613,7 @@ lemma diff_HKx_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 
   simpa using hcomp.mul_const (g y)
 
 
+@[blueprint "lem:diff_HKxx_mul" (statement := /-- The second partial derivative w.r.t. space $x$ of the product between heat kernel and an integrable function is the product of the second partial derivative w.r.t. space $x$ of the heat kernel and the function. -/)]
 lemma diff_HKxx_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ)(ht : 0 < t) (hα : 0 < α):
     ∀ᵐ y ∂volume, ∀ x' ∈ Metric.ball x 1,
       HasDerivAt (fun x'' => HKx α (x'' - y) t * g y) (HKxx α (x' - y) t * g y) x' := by
@@ -593,6 +638,7 @@ lemma diff_HKxx_mul {α : ℝ} {x t : ℝ} (g : ℝ → ℝ)(ht : 0 < t) (hα : 
 
 
 /-- Swap the time derivative $\partial_t$ with the integral $\int$. -/
+@[blueprint "lem:swap_t_heatKernel" (statement := /-- The time derivative of the integral of the product between heat kernel and an integrable function can pass through the integral. -/)]
 lemma swap_t_heatKernel
   {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 0 < α)
   (hg : Integrable g) :
@@ -663,6 +709,7 @@ lemma swap_t_heatKernel
 
 
 /-- Swap the spatial derivative $\partial_x$ with the integral $\int$. -/
+@[blueprint "lem:swap_x_heatKernel" (statement := /-- The space derivative of the integral of the product between heat kernel and an integrable function can pass through the integral. -/)]
 lemma swap_x_heatKernel
   {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 0 < α)
   (hg : Integrable g) :
@@ -728,6 +775,7 @@ lemma swap_x_heatKernel
 
 
 /-- Swap the second spatial derivative $\partial_{xx}$ with the integral $\int$. -/
+@[blueprint "lem:swap_xx_heatKernel" (statement := /-- The space derivative of the integral of the product between HKx and an integrable function can pass through the integral. -/)]
 lemma swap_xx_heatKernel
   {α : ℝ} {x t : ℝ} (g : ℝ → ℝ) (ht : 0 < t) (hα : 0 < α)
   (hg : Integrable g) :
@@ -797,6 +845,7 @@ differentiation-under-integral results to show that the convolution $u(x,t) = (K
 solves the heat equation $u_t = \alpha u_{xx}$.
 -/
 
+@[blueprint "thm:heat_from_convolution_heatKernel" (statement := /-- The convolution of the heat kernel with an integrable function solves the heat equation. -/)]
 theorem heat_from_convolution_heatKernel
   {α : ℝ} (g : ℝ → ℝ) (hα : 0 < α) (ht : 0 < t) (hg : Integrable g) :
   ∀ x,
