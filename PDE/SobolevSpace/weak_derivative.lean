@@ -63,7 +63,6 @@ open NNReal
 
 /-- Standard basis vector sequence in `ℝᵈ` indexed by `s : Fin n → Fin d`,
     used to evaluate iterated Fréchet derivatives along coordinate directions. -/
-
 def unitSeq {d : ℕ+} {n : ℕ} (s : Fin n → Fin d) : Fin n → (Fin d → ℝ) :=
   fun j => Pi.single (s j) (1 : ℝ)
 
@@ -85,7 +84,6 @@ def unitSeq {d : ℕ+} {n : ℕ} (s : Fin n → Fin d) : Fin n → (Fin d → �
 
 /-- If `f` is locally integrable on `U` and `ψ ∈ Cc^∞(U)`, then `ψ · f` is integrable
     on all of `ℝᵈ`. This is the key integrability bridge between local and global theories. -/
-
 lemma IntMulLocalintComp {d : ℕ+} (U : Set (Fin d → ℝ))
     {f : (Fin d → ℝ) →ₘ[volume] ℝ} {ψ : (Fin d → ℝ) → ℝ}
     (hf : LocallyIntegrableOn f U volume) (ψ_comp : HasCompactSupport ψ)
@@ -99,7 +97,6 @@ lemma IntMulLocalintComp {d : ℕ+} (U : Set (Fin d → ℝ))
 
 /-- The Fréchet derivative `x ↦ (∂ˢψ(x))(unitSeq s)` of a test function `ψ ∈ Cc^∞(U)` again
     lies in `Cc^∞(U)`. This is used to compose the weak derivative definition with itself. -/
-
 lemma FderivCcinfty {d : ℕ+} {n : ℕ} {U : Set (Fin d → ℝ)} (s : Fin n → Fin d)
     {ψ : (Fin d → ℝ) → ℝ} (hψ : ψ ∈ Cc_inftyU d U)
     : (fun x => (iteratedFDeriv ℝ n ψ x) (unitSeq s)) ∈ Cc_inftyU d U := by
@@ -128,7 +125,6 @@ lemma FderivCcinfty {d : ℕ+} {n : ℕ} {U : Set (Fin d → ℝ)} (s : Fin n �
 
 /-- If `∫ ψ · f = ∫ ψ · g` for all `ψ ∈ Cc^∞(U)`, then `f =ᵃᵉ g` on `U`.
     This is the du Bois-Reymond lemma, the key uniqueness engine for weak derivatives. -/
-
 lemma IsOpen.ae_eq_of_integral_contDiff_smul_eq {d : ℕ+} {U : Set (Fin d → ℝ)}{hU: IsOpen U}
   {f : (Fin d → ℝ) →ₘ[volume] ℝ} {g : (Fin d → ℝ) →ₘ[volume] ℝ}
   {hf: LocallyIntegrableOn f U volume}
@@ -167,7 +163,6 @@ lemma IsOpen.ae_eq_of_integral_contDiff_smul_eq {d : ℕ+} {U : Set (Fin d → �
 /-- `IsWeakMultiDerivU U s f Df` asserts that `Df` is the weak derivative of `f` in the
     directions encoded by `s : Fin n → Fin d` on the open set `U`:
     `∫_U f · ∂ˢψ = (-1)ⁿ · ∫_U Df · ψ` for all test functions `ψ ∈ Cc^∞(U)`. -/
-
 noncomputable def IsWeakMultiDerivU {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ))
     (s : Fin n → Fin d) (f Df : Lp_locU d 1 U) : Prop :=
   ∀ ψ : (Fin d → ℝ) → ℝ, ψ ∈ Cc_inftyU d U →
@@ -184,14 +179,12 @@ lemma isWeakMultiDerivU_iff {d : ℕ+} {n : ℕ} {U : Set (Fin d → ℝ)}
 
 /-- `f` has a weak multi-derivative in directions `s` on `U` if there exists a locally
     integrable function satisfying the integration-by-parts identity. -/
-
 noncomputable def HasWeakMultiDerivU {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ))
     (f : Lp_locU d 1 U) (s : Fin n → Fin d) : Prop :=
   ∃ Df : Lp_locU d 1 U, IsWeakMultiDerivU U s f Df
 
 /-- Uniqueness of weak multi-derivatives on `U`: any two candidates must agree almost everywhere
     on `U`. The proof reduces to the du Bois-Reymond lemma via the defining identity. -/
-
 theorem WeakDerivUniqU {d : ℕ+} {n : ℕ} {U : Set (Fin d → ℝ)} (hU : IsOpen U)
     {f : Lp_locU d 1 U} {s : Fin n → Fin d}
     {Df1 Df2 : Lp_locU d 1 U}
@@ -211,7 +204,6 @@ theorem WeakDerivUniqU {d : ℕ+} {n : ℕ} {U : Set (Fin d → ℝ)} (hU : IsOp
       simpa [smul_eq_mul] using this
 
 /-- The canonical weak multi-derivative on `U`, chosen by `Classical.choose`. -/
-
 noncomputable def WeakmultiderivU {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ))
     (f : Lp_locU d 1 U) (s : Fin n → Fin d) (h : HasWeakMultiDerivU U f s) : Lp_locU d 1 U :=
   Classical.choose h
@@ -222,13 +214,11 @@ theorem WeakmultiderivU_spec {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ))
   Classical.choose_spec h
 
 /-- Any weak multi-derivative `Df` on `U` agrees a.e. with the canonical choice. -/
-
 theorem WeakmultiderivU_unique {d : ℕ+} {n : ℕ} {U : Set (Fin d → ℝ)} (hU : IsOpen U)
     (s : Fin n → Fin d) (f : Lp_locU d 1 U) (h : HasWeakMultiDerivU U f s)
     (Df : Lp_locU d 1 U) (hDf : IsWeakMultiDerivU U s f Df) :
     (WeakmultiderivU U f s h : (Fin d → ℝ) →ₘ[volume] ℝ) =ᵐ[volume.restrict U]
     (Df : (Fin d → ℝ) →ₘ[volume] ℝ) := by
-
     simpa using WeakDerivUniqU hU (WeakmultiderivU_spec U f s h) hDf
 
 
