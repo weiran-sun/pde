@@ -726,7 +726,7 @@ lemma NNReal.rpow_sum_le_sum {p : ℝ} (hp : 1 ≤ p) :
     calc (A + B ^ p) ^ (1 / p)
         ≤ A ^ (1 / p) + B := hsub
       _ ≤ ∑ i : Fin n, (a i.castSucc : ℝ) + B :=
-          add_le_add_right
+          add_le_add_left
             (show A ^ (1 / p) ≤ ∑ i : Fin n, (a i.castSucc : ℝ) from ih (a ∘ Fin.castSucc)) _
 
 /-- Convergence in `W^{k,p}(U)` is equivalent to convergence of each weak-derivative
@@ -755,10 +755,10 @@ lemma WkpU.tendsto_iff_all_derivELpNorm
           WkpU.derivELpNorm_ne_top g n s)
         (iSup_le fun n => iSup_le fun s =>
           (Finset.single_le_sum (f := fun s' : Fin n.val → Fin ↑d => WkpU.derivELpNorm g n.val s')
-            (fun _ _ => zero_le _) (Finset.mem_univ s)).trans
+            (fun _ _ => zero_le) (Finset.mem_univ s)).trans
           (Finset.single_le_sum (f := fun n' : Fin (k+1) =>
             ∑ s' : Fin n'.val → Fin ↑d, WkpU.derivELpNorm g n'.val s')
-            (fun _ _ => Finset.sum_nonneg fun _ _ => zero_le _) (Finset.mem_univ n)))
+            (fun _ _ => Finset.sum_nonneg fun _ _ => zero_le) (Finset.mem_univ n)))
       simp_rw [ENNReal.toReal_sum (fun n _ => ENNReal.sum_ne_top.mpr fun s _ =>
           WkpU.derivELpNorm_ne_top g n s),
         ENNReal.toReal_sum (fun s _ => WkpU.derivELpNorm_ne_top g _ s)] at hmono; exact hmono
@@ -788,8 +788,8 @@ lemma WkpU.tendsto_iff_all_derivELpNorm
         ENNReal.tendsto_ofReal hreal
   · intro h
     refine squeeze_zero (fun j => norm_nonneg _) (fun j => hnorm (fₙ j - f)) ?_
-    simpa using tendsto_finset_sum Finset.univ fun n _ =>
-      tendsto_finset_sum Finset.univ fun s _ =>
+    simpa using tendsto_finsetSum Finset.univ fun n _ =>
+      tendsto_finsetSum Finset.univ fun s _ =>
         (ENNReal.tendsto_toReal zero_ne_top).comp (h n s)
 
 lemma WkpU.derivELpNorm_zero_sub_eq_toLp_norm
