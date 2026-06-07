@@ -1,62 +1,6 @@
-import Init.Data.Nat.Basic
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.NNReal.Defs
-import Mathlib.Data.Set.Function
-import Mathlib.Data.Finset.Basic
-import Mathlib.Data.Fin.Basic
-import Mathlib.Data.ENNReal.Basic
-
-import Mathlib.MeasureTheory.Integral.Lebesgue.Norm
-import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
-import Mathlib.MeasureTheory.MeasurableSpace.Embedding
-import Mathlib.MeasureTheory.Function.LpSpace.Basic
-import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
-import Mathlib.MeasureTheory.Integral.Lebesgue.Countable
-import Mathlib.MeasureTheory.Integral.IntegrableOn
-import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.MeasureTheory.Measure.Restrict
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
-import Mathlib.MeasureTheory.Function.AEEqFun
-import Mathlib.MeasureTheory.Function.AEEqOfIntegral
-
-import Mathlib.Analysis.Calculus.FDeriv.Basic
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.Normed.Module.Basic
-import Mathlib.Analysis.Normed.Group.Basic
-import Mathlib.Analysis.SpecialFunctions.Exp
-import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
-
-import Mathlib.Analysis.Calculus.ContDiff.Defs
-import Mathlib.Analysis.Calculus.ContDiff.Basic
-
-import Mathlib.Topology.Defs.Basic
-import Mathlib.Topology.UniformSpace.Cauchy
-import Mathlib.Topology.Algebra.Module.Basic
-import Mathlib.Topology.Defs.Filter
-import Mathlib.Topology.Basic
-import Mathlib.Topology.Algebra.Support
-
-import Mathlib.Order.Interval.Set.Defs
-import Mathlib.Algebra.Module.Defs
-import Mathlib.Logic.Nonempty
-import Mathlib.Dynamics.Ergodic.MeasurePreserving
-
 import Mathlib.Geometry.Manifold.PartitionOfUnity
-import Mathlib.Geometry.Manifold.Metrizable
-
-open Real
-open Finset
-open Fin
 open MeasureTheory
-open Nat
-open MeasurableEquiv
 open ENNReal
-open Filter Topology
-open IntegrableOn
-open NNReal
-
 
 /-! ## Compactly supported smooth test functions -/
 
@@ -132,9 +76,7 @@ lemma LplocLocallyIntegU (d : ℕ+) (p : ℝ≥0∞) (hp : 1 ≤ p) (U : Set (Fi
     LocallyIntegrableOn f U volume := by
   rw [locallyIntegrableOn_iff hU.isLocallyClosed]
   intro K hKU hK
-  letI : IsFiniteMeasure (volume.restrict K) :=
-    ⟨by simpa [Measure.restrict_apply, Set.inter_univ, MeasurableSet.univ]
-        using hK.measure_lt_top⟩
+  letI : IsFiniteMeasure (volume.restrict K) := ⟨by simpa using hK.measure_lt_top⟩
   simpa [IntegrableOn] using (hf K hK hKU).integrable (hq1 := hp)
 
 /-- Every function in `Lp_loc d p` (with `p ≥ 1`) is locally integrable on `ℝᵈ`.
