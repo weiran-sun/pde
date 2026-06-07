@@ -11,6 +11,9 @@ open NNReal
 --WkpU (Wkp) Submodule based on Lp_locU d 1 U
 --WkpU.derivELpNorm
 --WkpU.eNorm
+--The construction here is not throught the distribution path.
+--Instead, we build directly upon L^p_loc functions. This works 
+--since here k is an integer. 
 
 
 --------------Definition of Sobolev Spaces W^{k,p}(U) ---------
