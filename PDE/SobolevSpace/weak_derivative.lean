@@ -1,6 +1,6 @@
 import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
 
-import LeanProjects.Galerkin.V2_Lp_function_spaces
+import LeanProjects.Galerkin.Lp_function_spaces
 
 open MeasureTheory
 
