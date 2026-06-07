@@ -1,52 +1,7 @@
-import Init.Data.Nat.Basic
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.NNReal.Defs
-import Mathlib.Data.Set.Function
-import Mathlib.Data.Finset.Basic
-import Mathlib.Data.Fin.Basic
-import Mathlib.Data.ENNReal.Basic
+import LeanProjects.Galerkin.Lp_function_spaces
+import LeanProjects.Galerkin.weak_derivative
 
-import Mathlib.MeasureTheory.Integral.Lebesgue.Norm
-import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
-import Mathlib.MeasureTheory.MeasurableSpace.Embedding
-import Mathlib.MeasureTheory.Function.LpSpace.Basic
-import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
-import Mathlib.MeasureTheory.Integral.Lebesgue.Countable
-import Mathlib.MeasureTheory.Integral.IntegrableOn
-import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.MeasureTheory.Measure.Restrict
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
-
-import Mathlib.Analysis.Calculus.FDeriv.Basic
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.MeanInequalities
-import Mathlib.Analysis.Normed.Module.Basic
-import Mathlib.Analysis.Normed.Group.Basic
-import Mathlib.Analysis.SpecialFunctions.Exp
-import Mathlib.Analysis.Normed.Affine.Isometry
-
-import Mathlib.Topology.Defs.Basic
-import Mathlib.Topology.UniformSpace.Cauchy
-import Mathlib.Topology.Algebra.Module.Basic
-import Mathlib.Topology.Defs.Filter
-import Mathlib.Topology.Basic
-
-import Mathlib.Order.Interval.Set.Defs
-import Mathlib.Algebra.Module.Defs
-import Mathlib.Logic.Nonempty
-import Mathlib.Dynamics.Ergodic.MeasurePreserving
-
-import LeanProjects.Galerkin.V2_Lp_function_spaces
-import LeanProjects.Galerkin.V2_weak_derivative
-
-open Real
-open Finset
-open Fin
 open MeasureTheory
-open Nat
-open MeasurableEquiv
 open ENNReal
 open Filter Topology
 open NNReal
