@@ -88,13 +88,4 @@ lemma WkpU.weakDeriv_smul {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
   exact (huniq.trans eq_smul).trans
     (AEEqFun.coeFn_smul c (WkpU.weakDeriv f n hn s))
 
-noncomputable def HkU.innerFormula {d : ℕ+} {k : ℕ}
-    {U : Set (Fin d → ℝ)} {hU : IsOpen U} (f g : HkU d k U hU) : ℝ :=
-  (∫ x, (f.val.val : (Fin d → ℝ) → ℝ) x * (g.val.val : (Fin d → ℝ) → ℝ) x ∂(μU d U)) +
-  ∑ n : Fin k, ∑ s : Fin (n.val + 1) → Fin d,
-    let nm : ℕ+ := ⟨n.val + 1, Nat.succ_pos _⟩
-    let hnk : nm ≤ k := Nat.succ_le_of_lt n.isLt
-    ∫ x, ((WkpU.weakDeriv f nm hnk s) : (Fin d → ℝ) → ℝ) x
-       * ((WkpU.weakDeriv g nm hnk s) : (Fin d → ℝ) → ℝ) x ∂(μU d U)
-
 /-- To be continued -/
