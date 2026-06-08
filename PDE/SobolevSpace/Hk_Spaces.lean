@@ -96,3 +96,5 @@ noncomputable def HkU.innerFormula {d : ℕ+} {k : ℕ}
     let hnk : nm ≤ k := Nat.succ_le_of_lt n.isLt
     ∫ x, ((WkpU.weakDeriv f nm hnk s) : (Fin d → ℝ) → ℝ) x
        * ((WkpU.weakDeriv g nm hnk s) : (Fin d → ℝ) → ℝ) x ∂(μU d U)
+
+/-- To be continued -/
