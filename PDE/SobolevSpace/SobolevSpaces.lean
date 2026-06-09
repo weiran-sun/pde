@@ -1,5 +1,5 @@
-import LeanProjects.Galerkin.Lp_function_spaces
-import LeanProjects.Galerkin.weak_derivative
+import LeanProjects.Galerkin.V3_Lp_function_spaces
+import LeanProjects.Galerkin.V3_weak_derivative
 
 open MeasureTheory
 open ENNReal
@@ -7,19 +7,7 @@ open Filter Topology
 open NNReal
 
 
---Sobolev construction ---
---WkpU (Wkp) Submodule based on Lp_locU d 1 U
---WkpU.derivELpNorm
---WkpU.eNorm
-
---The construction here is not throught the distribution path.
---Instead, we build directly upon L^p_loc functions. This works 
---since here k is an integer. 
-
---The main goal is to construct W^{k,p} as a Banach space. 
-
-
---------------Definition of Sobolev Spaces W^{k,p}(U) ---------
+/-! ## Definition of Sobolev Spaces W^{k,p}(U)-/
 
 section Sobolev
 
@@ -92,7 +80,7 @@ lemma WkpU.aestronglyMeasurable (f : WkpU d k p U hU) :
   f.property.1.1
 
 
--------------Sobolev Space W^{k, p}(U) as a normed space --------------
+/-! ## Sobolev Space W^{k, p}(U) as a normed space -/
 
 /-- The `eLpNorm` of the `n`-th weak derivative of `f` along the multi-index `s`. -/
 noncomputable def WkpU.derivELpNorm {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
@@ -426,7 +414,7 @@ noncomputable instance instCoeFunWkpU {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
   coe := fun f ↦ ↑f.val.val
 
 
--------------Sobolev Space W^{k, p}(U) as a Banach space ---------------
+/-! ## Sobolev Space W^{k, p}(U) as a Banach space -/
 
 
 /-- The projection `WkpU d k p U hU` → `Lp ℝ p (μU d U)` -/
