@@ -44,7 +44,6 @@ noncomputable abbrev Cc_infty (d : ℕ+) : Submodule ℝ ((Fin d → ℝ) → �
 noncomputable def μU (d : ℕ+) (U : Set (Fin d → ℝ)) : Measure (Fin d → ℝ) :=
   volume.restrict U
 
-
 /-- Functions locally in `Lᵖ` on an open set `U ⊆ ℝᵈ`: those lying in `Lᵖ(C)` for every
     compact `C ⊆ U`. -/
 noncomputable def Lp_locU (d : ℕ+) (p : ℝ≥0∞) (U : Set (Fin d → ℝ)) :
