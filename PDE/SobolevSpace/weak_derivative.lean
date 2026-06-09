@@ -1,8 +1,9 @@
 import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
 
-import LeanProjects.Galerkin.Lp_function_spaces
+import LeanProjects.Galerkin.V3_Lp_function_spaces
 
 open MeasureTheory
+
 
 /-- Standard basis vector sequence in `ℝᵈ` indexed by `s : Fin n → Fin d`,
     used to evaluate iterated Fréchet derivatives along coordinate directions. -/
@@ -10,20 +11,7 @@ def unitSeq {d : ℕ+} {n : ℕ} (s : Fin n → Fin d) : Fin n → (Fin d → �
   fun j => Pi.single (s j) (1 : ℝ)
 
 
-/- -------------------------------------------------------------------------------
-#                            Auxiliary Lemmas
-# --------------------------------------------------------------------------------
-
-- `Lemma IntMulLocalintComp`: If f is locally integrable on U and ψ is C_c (U), then
--        f ψ is integrable on ℝᵈ.
-
-- `Lemma FderivCcinfty`: If ψ ∈ Cc_infty(U), then its iterated Frechet derivatives are in
-         Cc_infty (U)
-
-- `Lemma`: if ∫ f ψ = ∫ g ψ for all test functions ψ, then f =ᵐ[volume.restrict U] g
-
-# -------------------------------------------------------------------------------
--------------------------------------------------------------------------------- -/
+/-! ## Auxiliary Lemmas-/
 
 /-- If `f` is locally integrable on `U` and `ψ ∈ Cc^∞(U)`, then `ψ · f` is integrable
     on all of `ℝᵈ`. This is the key integrability bridge between local and global theories. -/
@@ -113,16 +101,7 @@ lemma IsOpen.ae_eq_of_integral_contDiff_smul_eq {d : ℕ+} {U : Set (Fin d → �
     simpa [sub_eq_zero] using hx
 
 
-/- -------------------------------------------------------------------------------
-#                           Weak Derivative in U
-# --------------------------------------------------------------------------------
-
-- `Definition`: weak derivatives
-
-- `WeakmultiderivU_unique`: any other weak multi-derivative equals the canonical one a.e.
-
-# -------------------------------------------------------------------------------
--------------------------------------------------------------------------------- -/
+/-! ## Weak Derivative in U-/
 
 /-- `IsWeakMultiDerivU U s f Df` asserts that `Df` is the weak derivative of `f` in the
     directions encoded by `s : Fin n → Fin d` on the open set `U`:
@@ -191,19 +170,8 @@ theorem WeakmultiderivU_unique {d : ℕ+} {n : ℕ} {U : Set (Fin d → ℝ)} (h
     simpa using WeakDerivUniqU hU (WeakmultiderivU_spec U f s h) hDf
 
 
-/- -------------------------------------------------------------------------------
-#                 Linear structure of weak derivatives on U
-# --------------------------------------------------------------------------------
 
-- `zeroWeakmultiDerivU`:   the zero function is weakly differentiable with derivative zero.
-- `WeakmultiDerivU_add`:   sum of weakly differentiable functions is weakly differentiable.
-- `WeakmultiDerivU_smul`:  scalar multiple of a weakly differentiable function is weakly
-                           differentiable.
-
-  Note: `n : ℕ` throughout; the `n = 0` case (identity/zeroth derivative) is valid.
-
-# -------------------------------------------------------------------------------
--------------------------------------------------------------------------------- -/
+/-! ## Linear structure of weak derivatives on U-/
 
 lemma zeroWeakmultiDerivU {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ)) (hU : IsOpen U)
     (s : Fin n → Fin d) :
@@ -353,15 +321,7 @@ lemma WeakmultiDerivU_smul {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ)) (hU : 
             WeakmultiderivU_unique hU s (c • f) ⟨c • fdev, dev_smul⟩ (c • fdev) dev_smul⟩
 
 
-/- -------------------------------------------------------------------------------
-#                 Weak Derivative on ℝᵈ (global theory)
-# --------------------------------------------------------------------------------
-
-  The global theory is the special case `U = Set.univ`. All definitions and theorems
-  are thin wrappers that apply the U-theory with `hU := isOpen_univ`.
-
-# -------------------------------------------------------------------------------
--------------------------------------------------------------------------------- -/
+/-! ## Weak Derivative on ℝᵈ (global theory) -/
 
 /-- `IsWeakMultiDeriv s f Df` asserts that `Df` is the weak multi-derivative of `f` in
     directions `s` on all of `ℝᵈ`. Definitionally equal to `IsWeakMultiDerivU Set.univ s f Df`. -/
