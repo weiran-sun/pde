@@ -2,6 +2,7 @@ import Mathlib.Geometry.Manifold.PartitionOfUnity
 open MeasureTheory
 open ENNReal
 
+
 /-! ## Compactly supported smooth test functions -/
 
 /-- Compactly supported smooth functions supported in an open set `U ⊆ ℝᵈ`.
@@ -38,7 +39,6 @@ noncomputable abbrev Cc_infty (d : ℕ+) : Submodule ℝ ((Fin d → ℝ) → �
   Cc_inftyU d Set.univ
 
 
-
 /-! ## Locally Lp function spaces -/
 
 noncomputable def μU (d : ℕ+) (U : Set (Fin d → ℝ)) : Measure (Fin d → ℝ) :=
@@ -47,36 +47,42 @@ noncomputable def μU (d : ℕ+) (U : Set (Fin d → ℝ)) : Measure (Fin d → 
 /-- Functions locally in `Lᵖ` on an open set `U ⊆ ℝᵈ`: those lying in `Lᵖ(C)` for every
     compact `C ⊆ U`. -/
 noncomputable def Lp_locU (d : ℕ+) (p : ℝ≥0∞) (U : Set (Fin d → ℝ)) :
-    Submodule ℝ ((Fin d → ℝ) →ₘ[volume] ℝ) where
+    Submodule ℝ ((Fin d → ℝ) →ₘ[μU d U] ℝ) where
   carrier := {f | ∀ (C : Set (Fin d → ℝ)), IsCompact C → C ⊆ U → MemLp f p (volume.restrict C)}
 
-  zero_mem' _C _hC _hCU :=
-    (memLp_congr_ae AEEqFun.coeFn_zero.restrict).2 MemLp.zero
+  zero_mem' _C _hC hCU :=
+    (memLp_congr_ae (ae_mono (Measure.restrict_mono hCU le_rfl)
+      AEEqFun.coeFn_zero)).2 MemLp.zero
 
   add_mem' hf hg C hC hCU :=
-    (memLp_congr_ae (AEEqFun.coeFn_add _ _).restrict).2 (MemLp.add (hf C hC hCU) (hg C hC hCU))
+    (memLp_congr_ae (ae_mono (Measure.restrict_mono hCU le_rfl)
+      (AEEqFun.coeFn_add _ _))).2 (MemLp.add (hf C hC hCU) (hg C hC hCU))
 
   smul_mem' a f hf C hC hCU :=
-    (memLp_congr_ae (AEEqFun.coeFn_smul a f).restrict).2 (MemLp.const_smul (hf C hC hCU) a)
+    (memLp_congr_ae (ae_mono (Measure.restrict_mono hCU le_rfl)
+      (AEEqFun.coeFn_smul a f))).2 (MemLp.const_smul (hf C hC hCU) a)
 
 
 /-- Functions locally in `Lᵖ` on all of `ℝᵈ`, as the special case `U = Set.univ`. -/
-noncomputable abbrev Lp_loc (d : ℕ+) (p : ℝ≥0∞) : Submodule ℝ ((Fin d → ℝ) →ₘ[volume] ℝ) :=
+noncomputable abbrev Lp_loc (d : ℕ+) (p : ℝ≥0∞) : Submodule ℝ ((Fin d → ℝ) →ₘ[volume.restrict Set.univ] ℝ) :=
   Lp_locU d p Set.univ
 
 
 /-- Membership in `Lp_loc` unfolds to: `MemLp f p (volume.restrict C)` for every compact `C`. -/
 @[simp]
-lemma mem_Lp_loc_iff {d : ℕ+} {p : ℝ≥0∞} {f : (Fin d → ℝ) →ₘ[volume] ℝ} :
+lemma mem_Lp_loc_iff {d : ℕ+} {p : ℝ≥0∞} {f : (Fin d → ℝ) →ₘ[μU d Set.univ] ℝ} :
     f ∈ Lp_loc d p ↔ ∀ C : Set (Fin d → ℝ), IsCompact C → MemLp f p (volume.restrict C) := by
-  simp [Lp_loc, Lp_locU, Set.subset_univ]
+  simp only [Lp_loc, Lp_locU]
+  constructor
+  · intro h C hC; exact h C hC (Set.subset_univ _)
+  · intro h C hC _; exact h C hC
 
 
 /-! ## Local integrability -/
 
 /-- Every function in `Lp_locU d p U` (with `p ≥ 1`) is locally integrable on `U`. -/
 lemma LplocLocallyIntegU (d : ℕ+) (p : ℝ≥0∞) (hp : 1 ≤ p) (U : Set (Fin d → ℝ)) (hU : IsOpen U)
-    {f : (Fin d → ℝ) →ₘ[volume] ℝ} (hf : f ∈ Lp_locU d p U) :
+    {f : (Fin d → ℝ) →ₘ[volume.restrict U] ℝ} (hf : f ∈ Lp_locU d p U) :
     LocallyIntegrableOn f U volume := by
   rw [locallyIntegrableOn_iff hU.isLocallyClosed]
   intro K hKU hK
@@ -86,6 +92,6 @@ lemma LplocLocallyIntegU (d : ℕ+) (p : ℝ≥0∞) (hp : 1 ≤ p) (U : Set (Fi
 /-- Every function in `Lp_loc d p` (with `p ≥ 1`) is locally integrable on `ℝᵈ`.
     Derived from `LplocLocallyIntegU` applied to `U = Set.univ`. -/
 lemma LplocLocallyInteg (d : ℕ+) (p : ℝ≥0∞) (hp : 1 ≤ p)
-    {f : (Fin d → ℝ) →ₘ[volume] ℝ} (hf : f ∈ Lp_loc d p) :
+    {f : (Fin d → ℝ) →ₘ[volume.restrict Set.univ] ℝ} (hf : f ∈ Lp_loc d p) :
     LocallyIntegrable f :=
   locallyIntegrableOn_univ.mp (LplocLocallyIntegU d p hp Set.univ isOpen_univ hf)
