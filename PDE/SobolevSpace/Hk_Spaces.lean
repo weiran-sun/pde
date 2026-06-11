@@ -3,9 +3,9 @@ import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.Analysis.InnerProductSpace.l2Space
 import Mathlib.Topology.MetricSpace.Sequences
 
-import LeanProjects.Galerkin.Lp_function_spaces
-import LeanProjects.Galerkin.weak_derivative
-import LeanProjects.Galerkin.sobolev
+import PDE.SobolevSpace.Lp_function_spaces
+import PDE.SobolevSpace.weak_derivative
+import PDE.SobolevSpace.SobolevSpaces
 
 open MeasureTheory
 open ENNReal
@@ -62,15 +62,9 @@ lemma WkpU.weakDeriv_add {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
     =ᵐ[μU d U]
     fun x => (WkpU.weakDeriv f n hn s : (Fin d → ℝ) → ℝ) x
            + (WkpU.weakDeriv g n hn s : (Fin d → ℝ) → ℝ) x := by
-  obtain ⟨h_add, eq_add⟩ := WeakmultiDerivU_add U hU s f.val g.val
-                              (WkpU.hasWeakDeriv f n hn s)
-                              (WkpU.hasWeakDeriv g n hn s)
-  have huniq := WeakmultiderivU_unique hU s (f + g).val
-                  (WkpU.hasWeakDeriv (f + g) n hn s)
-                  (WeakmultiderivU U (f + g).val s h_add)
-                  (WeakmultiderivU_spec U (f + g).val s h_add)
-  exact (huniq.trans eq_add).trans
-    (AEEqFun.coeFn_add (WkpU.weakDeriv f n hn s) (WkpU.weakDeriv g n hn s))
+  obtain ⟨_, eq_add⟩ := WeakmultiDerivU_add U hU s f.val g.val
+    (WkpU.hasWeakDeriv f n hn s) (WkpU.hasWeakDeriv g n hn s)
+  exact eq_add.trans (AEEqFun.coeFn_add (WkpU.weakDeriv f n hn s) (WkpU.weakDeriv g n hn s))
 
 /-- The weak derivative is scalar-linear -/
 lemma WkpU.weakDeriv_smul {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
@@ -79,13 +73,5 @@ lemma WkpU.weakDeriv_smul {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
     ((WkpU.weakDeriv (c • f) n hn s) : (Fin d → ℝ) → ℝ)
     =ᵐ[μU d U]
     fun x => c • (WkpU.weakDeriv f n hn s : (Fin d → ℝ) → ℝ) x := by
-  obtain ⟨h_smul, eq_smul⟩ := WeakmultiDerivU_smul U hU s f.val c
-                                (WkpU.hasWeakDeriv f n hn s)
-  have huniq := WeakmultiderivU_unique hU s (c • f).val
-                  (WkpU.hasWeakDeriv (c • f) n hn s)
-                  (WeakmultiderivU U (c • f).val s h_smul)
-                  (WeakmultiderivU_spec U (c • f).val s h_smul)
-  exact (huniq.trans eq_smul).trans
-    (AEEqFun.coeFn_smul c (WkpU.weakDeriv f n hn s))
-
-/-- To be continued -/
+  obtain ⟨_, eq_smul⟩ := WeakmultiDerivU_smul U hU s f.val c (WkpU.hasWeakDeriv f n hn s)
+  exact eq_smul.trans (AEEqFun.coeFn_smul c (WkpU.weakDeriv f n hn s))
