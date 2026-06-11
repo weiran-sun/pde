@@ -1,5 +1,5 @@
-import LeanProjects.Galerkin.V3_Lp_function_spaces
-import LeanProjects.Galerkin.V3_weak_derivative
+import PDE.SobolevSpace.Lp_function_spaces
+import PDE.SobolevSpace.weak_derivative
 
 open MeasureTheory
 open ENNReal

@@ -3,9 +3,9 @@ import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.Analysis.InnerProductSpace.l2Space
 import Mathlib.Topology.MetricSpace.Sequences
 
-import LeanProjects.Galerkin.Lp_function_spaces
-import LeanProjects.Galerkin.weak_derivative
-import LeanProjects.Galerkin.sobolev
+import PDE.SobolevSpace.Lp_function_spaces
+import PDE.SobolevSpace.weak_derivative
+import PDE.SobolevSpace.SobolevSpaces
 
 open MeasureTheory
 open ENNReal
