@@ -438,10 +438,7 @@ lemma WkpU.derivELpNorm_zero_le_eNorm [Fact (1 ≤ p)] (f : WkpU d k p U hU) :
   · exact le_iSup_of_le ⟨0, k.succ_pos⟩ (le_iSup _ Fin.elim0)
   · simp only [WkpU.derivELpNorm]
     have hp_pos : 0 < p.toReal := ENNReal.toReal_pos (one_pos.trans_le (Fact.out : 1 ≤ p)).ne' hp
-    have hpinv : p.toReal * (1 / p.toReal) = 1 := by field_simp
-    conv_lhs =>
-      rw [← ENNReal.rpow_one (eLpNorm _ p _), ← hpinv, ENNReal.rpow_mul]
-    apply ENNReal.rpow_le_rpow _ (by positivity)
+    rw [one_div, ENNReal.le_rpow_inv_iff hp_pos]
     exact le_trans (b := ∑ s : Fin 0 → Fin d, WkpU.derivELpNorm f 0 s ^ p.toReal)
       (Finset.single_le_sum
         (f := fun s => WkpU.derivELpNorm f 0 s ^ p.toReal)
@@ -474,10 +471,8 @@ lemma WkpU.eLpNorm_weakDeriv_eq {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
     rcases n with ⟨m | m, hm⟩
     · cases hm
     · simp only [WkpU.weakDeriv, WkpU.derivELpNorm]
-      dsimp;
-      split_ifs with h
-      · rfl
-      · exact (h hn).elim
+      dsimp
+      rw [dif_pos (show m + 1 ≤ k from hn)]
 
 
 /-- Each weak-derivative eLpNorm is bounded by the Sobolev eNorm. -/
@@ -489,10 +484,7 @@ lemma WkpU.derivELpNorm_le_eNorm [Fact (1 ≤ p)]
   · exact le_iSup_of_le ⟨n.val, Nat.lt_succ_of_le hn⟩ (le_iSup _ s)
   · have hp_pos : 0 < p.toReal :=
       ENNReal.toReal_pos (one_pos.trans_le (Fact.out : 1 ≤ p)).ne' hp
-    have hpinv : p.toReal * (1 / p.toReal) = 1 := by field_simp
-    conv_lhs =>
-      rw [← ENNReal.rpow_one (WkpU.derivELpNorm f n.val s), ← hpinv, ENNReal.rpow_mul]
-    apply ENNReal.rpow_le_rpow _ (by positivity)
+    rw [one_div, ENNReal.le_rpow_inv_iff hp_pos]
     exact le_trans
       (Finset.single_le_sum (f := fun s' => WkpU.derivELpNorm f n.val s' ^ p.toReal)
         (fun _ _ => by positivity) (Finset.mem_univ s))
