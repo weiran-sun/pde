@@ -125,19 +125,14 @@ noncomputable def WkpU.eNorm {d : ℕ+} (k : ℕ) (p : ℝ≥0∞)
 lemma WkpU.eNorm_ne_top (f : WkpU d k p U hU) : WkpU.eNorm k p f ≠ ⊤ := by
   simp only [WkpU.eNorm]
   split_ifs
-  · have hinner : ∀ n : Fin (k + 1),
-        ⨆ s : Fin n.val → Fin d, derivELpNorm f n.val s < ⊤ := fun n => by
-      conv_lhs =>
-        arg 1; ext s
-        rw [← ENNReal.coe_toNNReal (WkpU.derivELpNorm_ne_top f n s)]
-      exact ENNReal.iSup_coe_lt_top.mpr (Set.finite_range _).bddAbove
-    have houter : ⨆ n : Fin (k + 1),
-        ⨆ s : Fin n.val → Fin d, derivELpNorm f n.val s < ⊤ := by
-      conv_lhs =>
-        arg 1; ext n
-        rw [← ENNReal.coe_toNNReal (hinner n).ne]
-      exact ENNReal.iSup_coe_lt_top.mpr (Set.finite_range _).bddAbove
-    exact houter.ne
+  · refine ne_top_of_le_ne_top (ENNReal.sum_ne_top.mpr fun n _ =>
+      ENNReal.sum_ne_top.mpr fun s _ => WkpU.derivELpNorm_ne_top f n s)
+      (iSup_le fun n => iSup_le fun s =>
+        (Finset.single_le_sum (f := fun s' : Fin n.val → Fin d => derivELpNorm f n.val s')
+          (fun _ _ => zero_le) (Finset.mem_univ s)).trans
+          (Finset.single_le_sum (f := fun n' : Fin (k + 1) =>
+            ∑ s' : Fin n'.val → Fin d, derivELpNorm f n'.val s')
+            (fun _ _ => Finset.sum_nonneg fun _ _ => zero_le) (Finset.mem_univ n)))
   · exact ENNReal.rpow_ne_top_of_nonneg (by positivity)
       (ENNReal.sum_ne_top.mpr (fun n _ => ENNReal.sum_ne_top.mpr (fun s _ =>
         ENNReal.rpow_ne_top_of_nonneg (by positivity) (WkpU.derivELpNorm_ne_top f n s))))
@@ -190,14 +185,9 @@ lemma WkpU.eNorm_eq_zero_of_ae_zero (hp : p ≠ 0) (f : WkpU d k p U hU)
             apply WeakmultiderivU_unique hU s f.val _ 0
             intro ψ hψ
             rw [integral_smul_aezero_tsupport hU.measurableSet hf
-                  (FderivCcinfty s hψ).2.1]
-            have hint : ∫ x : Fin ↑d → ℝ,
-                    ψ x • ((0 : ((Fin ↑d → ℝ) →ₘ[μU d U] ℝ)) x) ∂ μU d U = 0 := by
-              apply integral_eq_zero_of_ae
-              filter_upwards [AEEqFun.coeFn_zero
-                  (α := Fin ↑d → ℝ) (μ := μU d U) (β := ℝ)] with x hx
-              simp [hx]
-            simpa [smul_eq_mul] using hint
+                  (FderivCcinfty s hψ).2.1, integral_eq_zero_of_ae (by
+              filter_upwards [AEEqFun.coeFn_zero (α := Fin ↑d → ℝ) (μ := μU d U)
+                (β := ℝ)] with x hx; simp [hx]), smul_zero]
           rw [eLpNorm_congr_ae (hweak0.trans AEEqFun.coeFn_zero)]
           exact eLpNorm_zero
         · rfl
@@ -257,13 +247,10 @@ lemma WkpU.derivELpNorm_add_le {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
   match n with
   | 0 =>
     simp only [WkpU.derivELpNorm]
-    have hcoe : ((f + g).val : (Fin d → ℝ) → ℝ)
-        =ᵐ[μU d U]
-        (f.val : (Fin d → ℝ) → ℝ) + (g.val : (Fin d → ℝ) → ℝ) :=
-      AEEqFun.coeFn_add f.val.1 g.val.1
-    rw [eLpNorm_congr_ae hcoe]
-    exact eLpNorm_add_le
-      (WkpU.aestronglyMeasurable f)
+    rw [eLpNorm_congr_ae (show ((f + g).val : (Fin d → ℝ) → ℝ) =ᵐ[μU d U]
+      (f.val : (Fin d → ℝ) → ℝ) + (g.val : (Fin d → ℝ) → ℝ) from
+      AEEqFun.coeFn_add f.val.1 g.val.1)]
+    exact eLpNorm_add_le (WkpU.aestronglyMeasurable f)
       (WkpU.aestronglyMeasurable g) hp1
   | n + 1 =>
     simp only [WkpU.derivELpNorm]
@@ -271,13 +258,9 @@ lemma WkpU.derivELpNorm_add_le {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
     · set nm : ℕ+ := ⟨n + 1, Nat.succ_pos n⟩
       obtain ⟨_, eq_add⟩ := WeakmultiDerivU_add U hU s f.val g.val
         (WkpU.hasWeakDeriv f nm hn s) (WkpU.hasWeakDeriv g nm hn s)
-      have heq :
-          (WkpU.weakDeriv (f + g) nm hn s : (Fin d → ℝ) → ℝ)
-          =ᵐ[μU d U]
-          (WkpU.weakDeriv f nm hn s : (Fin d → ℝ) → ℝ)
-            + (WkpU.weakDeriv g nm hn s : (Fin d → ℝ) → ℝ) :=
-        eq_add.trans (AEEqFun.coeFn_add _ _)
-      rw [eLpNorm_congr_ae heq]
+      rw [eLpNorm_congr_ae (show (WkpU.weakDeriv (f + g) nm hn s : (Fin d → ℝ) → ℝ) =ᵐ[μU d U]
+        (WkpU.weakDeriv f nm hn s : (Fin d → ℝ) → ℝ) + (WkpU.weakDeriv g nm hn s : (Fin d → ℝ) → ℝ)
+        from eq_add.trans (AEEqFun.coeFn_add _ _))]
       exact eLpNorm_add_le
         (WkpU.weakDeriv_memLp f nm hn s).aestronglyMeasurable
         (WkpU.weakDeriv_memLp g nm hn s).aestronglyMeasurable hp1
@@ -330,20 +313,18 @@ lemma WkpU.derivELpNorm_smul {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
   match n with
   | 0 =>
     simp only [WkpU.derivELpNorm]
-    have hcoe : ((c • f).val : (Fin d → ℝ) → ℝ)
-        =ᵐ[μU d U] c • (f.val : (Fin d → ℝ) → ℝ) :=
-        AEEqFun.coeFn_smul c f.val.1
-    rw [eLpNorm_congr_ae hcoe, eLpNorm_const_smul]
+    rw [eLpNorm_congr_ae (show ((c • f).val : (Fin d → ℝ) → ℝ) =ᵐ[μU d U]
+      c • (f.val : (Fin d → ℝ) → ℝ) from AEEqFun.coeFn_smul c f.val.1),
+      eLpNorm_const_smul]
   | n + 1 =>
     simp only [WkpU.derivELpNorm]
     split_ifs with hn
     · set nm : ℕ+ := ⟨n + 1, Nat.succ_pos n⟩
       obtain ⟨_, eq_smul⟩ := WeakmultiDerivU_smul U hU s f.val c
         (WkpU.hasWeakDeriv f nm hn s)
-      have heq : (WkpU.weakDeriv (c • f) nm hn s : (Fin d → ℝ) → ℝ)
-          =ᵐ[μU d U] c • (WkpU.weakDeriv f nm hn s : (Fin d → ℝ) → ℝ) :=
-        eq_smul.trans (AEEqFun.coeFn_smul c _)
-      rw [eLpNorm_congr_ae heq, eLpNorm_const_smul]
+      rw [eLpNorm_congr_ae (show (WkpU.weakDeriv (c • f) nm hn s : (Fin d → ℝ) → ℝ) =ᵐ[μU d U]
+        c • (WkpU.weakDeriv f nm hn s : (Fin d → ℝ) → ℝ) from
+        eq_smul.trans (AEEqFun.coeFn_smul c _)), eLpNorm_const_smul]
     · simp
 
 /-- Absolute homogeneity for `eNorm` . -/
@@ -354,10 +335,7 @@ lemma WkpU.eNorm_smul {d : ℕ+} {k : ℕ}{p : ℝ≥0∞}
     WkpU.eNorm k p (c • f) = ‖c‖ₑ * WkpU.eNorm k p f := by
   simp only [WkpU.eNorm]
   split_ifs with hp
-  · simp_rw [WkpU.derivELpNorm_smul c f]
-    rw [ENNReal.mul_iSup]
-    refine iSup_congr fun n => ?_
-    rw [ENNReal.mul_iSup]
+  · simp_rw [WkpU.derivELpNorm_smul c f, ENNReal.mul_iSup]
   · have hp_pos : 0 < p.toReal :=
       ENNReal.toReal_pos
        (ne_of_gt (lt_of_lt_of_le zero_lt_one hp1)) hp
@@ -456,10 +434,8 @@ lemma WkpU.norm_toLp_le [Fact (1 ≤ p)] (f : WkpU d k p U hU) :
   simp only [WkpU.toLp]
   rw [eLpNorm_congr_ae (WkpU.memLp f).coeFn_toLp]
   show (eLpNorm (f.val : (Fin d → ℝ) → ℝ) p (μU d U)).toReal ≤ WkpUNorm k p f
-  apply (ENNReal.toNNReal_le_toNNReal
-       ((WkpU.memLp f).eLpNorm_lt_top.ne)
-       (WkpU.eNorm_ne_top f)).mpr
-  exact WkpU.derivELpNorm_zero_le_eNorm f
+  exact (ENNReal.toNNReal_le_toNNReal (WkpU.memLp f).eLpNorm_lt_top.ne
+    (WkpU.eNorm_ne_top f)).mpr (WkpU.derivELpNorm_zero_le_eNorm f)
 
 
 /-- The eLpNorm of a weak derivative equals its derivELpNorm contribution. -/
@@ -534,29 +510,21 @@ lemma WkpU.derivToLp_sub
   obtain ⟨h_add, eq_add⟩ := WeakmultiDerivU_add U hU s f.val _ (WkpU.hasWeakDeriv f n hn s) h_neg
   have his : IsWeakMultiDerivU U s (f - g).val
       (WeakmultiderivU U (f.val + (-1 : ℝ) • g.val) s h_add) := by
-      have hfg : (f - g).val = f.val + (-1 : ℝ) • g.val := by
-        ext1; simp [sub_eq_add_neg]
-      rw [hfg]; exact Classical.choose_spec h_add
-  have key : (WkpU.weakDeriv (f - g) n hn s : (Fin d → ℝ) → ℝ) =ᵐ[μU d U]
-      (WkpU.weakDeriv f n hn s : (Fin d → ℝ) → ℝ) - WkpU.weakDeriv g n hn s := by
-      have step := WeakmultiderivU_unique hU s _ (WkpU.hasWeakDeriv (f - g) n hn s) _ his
-      filter_upwards [step, eq_add, eq_neg,
-        AEEqFun.coeFn_add (WeakmultiderivU U f.val s (WkpU.hasWeakDeriv f n hn s) : (Fin d → ℝ) →ₘ[μU d U] ℝ)
-                          (WeakmultiderivU U ((-1 : ℝ) • g.val) s h_neg : (Fin d → ℝ) →ₘ[μU d U] ℝ),
-        AEEqFun.coeFn_smul (-1 : ℝ) (WeakmultiderivU U g.val s (WkpU.hasWeakDeriv g n hn s) : (Fin d → ℝ) →ₘ[μU d U] ℝ),
-        AEEqFun.coeFn_sub (WkpU.weakDeriv f n hn s : (Fin d → ℝ) →ₘ[μU d U] ℝ)
-                          (WkpU.weakDeriv g n hn s : (Fin d → ℝ) →ₘ[μU d U] ℝ)]
-        with x h1 h2 h3 h4 h5 h6
-      simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.sub_apply, WkpU.weakDeriv] at *
-      linarith
+    have hfg : (f - g).val = f.val + (-1 : ℝ) • g.val := by ext1; simp [sub_eq_add_neg]
+    rw [hfg]; exact Classical.choose_spec h_add
   filter_upwards [
     (WkpU.weakDeriv_memLp (f - g) n hn s).coeFn_toLp,
     (WkpU.weakDeriv_memLp f n hn s).coeFn_toLp,
     (WkpU.weakDeriv_memLp g n hn s).coeFn_toLp,
     Lp.coeFn_sub (WkpU.weakDeriv_memLp f n hn s).toLp
                  (WkpU.weakDeriv_memLp g n hn s).toLp,
-    key] with x h1 h2 h3 h4 h5
-  simp only [WkpU.derivtoLp, Pi.sub_apply] at *
+    WeakmultiderivU_unique hU s _ (WkpU.hasWeakDeriv (f - g) n hn s) _ his, eq_add, eq_neg,
+    AEEqFun.coeFn_add (WeakmultiderivU U f.val s (WkpU.hasWeakDeriv f n hn s) : (Fin d → ℝ) →ₘ[μU d U] ℝ)
+                      (WeakmultiderivU U ((-1 : ℝ) • g.val) s h_neg : (Fin d → ℝ) →ₘ[μU d U] ℝ),
+    AEEqFun.coeFn_smul (-1 : ℝ) (WeakmultiderivU U g.val s (WkpU.hasWeakDeriv g n hn s) : (Fin d → ℝ) →ₘ[μU d U] ℝ)]
+    with x h1 h2 h3 h4 h5 h6 h7 h8 h9
+  simp only [WkpU.derivtoLp, WkpU.weakDeriv, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
+    Pi.sub_apply] at *
   linarith
 
 /-- If `f i` converges to `g` in `Lᵖ(U)`, then for any test function `ψ ∈ C_c^∞(U)`,
@@ -575,61 +543,40 @@ lemma integral_tendsto_of_Lploc_tendsto
             atTop (𝓝 0))
     : Tendsto (fun i => ∫ x, f i x * ψ x ∂μU d U) atTop (𝓝 (∫ x, g x * ψ x ∂μU d U))
     := by
-
     let q : ℝ≥0∞ := ENNReal.conjExponent p
     haveI : Fact (1 ≤ p) := ⟨hp⟩
     have hpq : p.HolderConjugate q := inferInstance
     letI : p.HolderTriple q 1 := hpq
-
     have hψ_Lq : MemLp ψ q (μU d U) := by
       haveI : IsFiniteMeasureOnCompacts (μU d U) := by
         unfold μU; infer_instance
       exact (hψ.2.2.continuous).memLp_of_hasCompactSupport hψ.1
-
     have hInt_g : Integrable (fun x => g x * ψ x) (μU d U) := by
       simpa [Pi.mul_apply] using MemLp.integrable_mul hg hψ_Lq
-
     have hfg : ∀ i, MemLp (fun x => f i x - g x) p (μU d U)
       := fun i => (hf i).sub hg
-
     have hInt_diff : ∀ i, Integrable (fun x => (f i x - g x) * ψ x) (μU d U) := by
       intro i
       simpa [Pi.mul_apply] using MemLp.integrable_mul (hfg i) hψ_Lq
-
     have hstep2 : Tendsto (fun i => ∫ x, (f i x - g x) * ψ x ∂μU d U) atTop (𝓝 0) := by
       set C := eLpNorm ψ q (μU d U)
       have hC_fin : C ≠ ⊤ := hψ_Lq.eLpNorm_lt_top.ne
-
       have hHolder : ∀ i, ‖∫ x, (f i x - g x) * ψ x ∂μU d U‖ ≤
         (eLpNorm (fun x => f i x - g x) p (μU d U) * C).toReal := fun i => by
-        have h1 : ‖∫ x, (f i x - g x) * ψ x ∂μU d U‖ ≤
-                  ∫ x, ‖f i x - g x‖ * ‖ψ x‖ ∂μU d U :=
-          (norm_integral_le_integral_norm _).trans (le_of_eq (by congr 1; ext x; exact norm_mul _ _))
-        have h2 : ∫ x, ‖f i x - g x‖ * ‖ψ x‖ ∂μU d U ≤
-                (eLpNorm (fun x => f i x - g x) p (μU d U) * C).toReal := by
-              simp_rw [← norm_mul]
-              have h_int := hInt_diff i
-              calc ∫ x, ‖(f i x - g x) * ψ x‖ ∂μU d U
-                  = (eLpNorm (fun x => (f i x - g x) * ψ x) 1 (μU d U)).toReal := by
-                      rw [eLpNorm_one_eq_lintegral_enorm]
-                      exact (integral_norm_eq_lintegral_enorm h_int.aestronglyMeasurable)
-                _ ≤ (eLpNorm (fun x => f i x - g x) p (μU d U) * C).toReal := by
-                      have hR_ne_top :
-                          eLpNorm (fun x => f i x - g x) p (μU d U) * C ≠ ⊤ := by
-                        exact ENNReal.mul_ne_top (hfg i).eLpNorm_lt_top.ne hC_fin
-                      exact
-                        (ENNReal.toReal_le_toReal
-                          (memLp_one_iff_integrable.mpr h_int).eLpNorm_lt_top.ne
-                          hR_ne_top).mpr
-                          (by
-                            simpa [C, smul_eq_mul, mul_comm, mul_left_comm, mul_assoc] using
-                              (MeasureTheory.eLpNorm_smul_le_mul_eLpNorm
-                                (μ := μU d U)
-                                (p := p) (q := q) (r := 1)
-                                (f := ψ)
-                                hψ_Lq.aestronglyMeasurable
-                                (hfg i).aestronglyMeasurable))
-        exact h1.trans h2
+        have h_int := hInt_diff i
+        calc ‖∫ x, (f i x - g x) * ψ x ∂μU d U‖
+            ≤ ∫ x, ‖(f i x - g x) * ψ x‖ ∂μU d U := norm_integral_le_integral_norm _
+          _ = (eLpNorm (fun x => (f i x - g x) * ψ x) 1 (μU d U)).toReal := by
+                rw [eLpNorm_one_eq_lintegral_enorm]
+                exact integral_norm_eq_lintegral_enorm h_int.aestronglyMeasurable
+          _ ≤ (eLpNorm (fun x => f i x - g x) p (μU d U) * C).toReal :=
+                (ENNReal.toReal_le_toReal
+                  (memLp_one_iff_integrable.mpr h_int).eLpNorm_lt_top.ne
+                  (ENNReal.mul_ne_top (hfg i).eLpNorm_lt_top.ne hC_fin)).mpr (by
+                    simpa [C, smul_eq_mul, mul_comm, mul_left_comm, mul_assoc] using
+                      MeasureTheory.eLpNorm_smul_le_mul_eLpNorm (μ := μU d U)
+                        (p := p) (q := q) (r := 1) (f := ψ)
+                        hψ_Lq.aestronglyMeasurable (hfg i).aestronglyMeasurable)
       exact squeeze_zero_norm hHolder (by
         simp_rw [ENNReal.toReal_mul]
         simpa using ((ENNReal.tendsto_toReal zero_ne_top).comp hconv).mul_const C.toReal)
@@ -828,11 +775,9 @@ lemma WkpU.ibp_tendsto [Fact (1 ≤ p)]
       (fun j => Lp.memLp (WkpU.toLp (fₙ j))) (Lp.memLp g)
       (FderivCcinfty s hψ) hconv
     simp_rw [← smul_eq_mul] at h
-    have hae : ∀ j, (WkpU.toLp (fₙ j) : (Fin d → ℝ) → ℝ) =ᵐ[μU d U]
-      (fₙ j : (Fin d → ℝ) → ℝ) := fun j =>
-        (WkpU.memLp (fₙ j)).coeFn_toLp
-    exact h.congr fun j => integral_congr_ae
-      ((hae j).mono fun x hx => by simp [hx])
+    refine h.congr fun j => integral_congr_ae <|
+      (show (WkpU.toLp (fₙ j) : (Fin d → ℝ) → ℝ) =ᵐ[μU d U] (fₙ j : (Fin d → ℝ) → ℝ)
+        from (WkpU.memLp (fₙ j)).coeFn_toLp).mono fun x hx => by simp [hx]
   have hrhs : Tendsto (fun j =>
         (-1 : ℝ)^(n : ℕ) • ∫ x, ψ x •
           (WkpU.derivtoLp (fₙ j) n hn s : (Fin d → ℝ) → ℝ) x ∂ μU d U) atTop
@@ -894,20 +839,16 @@ lemma WkpU.limit_of_cauchySeq [Fact (1 ≤ p)]
   refine ⟨f_lim,
     by simp_rw [show WkpU.toLp f_lim = g from Lp.ext (Lp.memLp g).coeFn_toLp]; exact hg,
     fun n hn s => ?_⟩
-  have hfl_deriv : WkpU.derivtoLp f_lim n hn s = (hg_ns n hn s).choose := by
-    let g_ns := (hg_ns n hn s).choose
-    have hid := (hg_ns n hn s).choose_spec.2
-    have hg_ns_loc : (g_ns : (Fin d → ℝ) →ₘ[μU d U] ℝ) ∈ Lp_locU d 1 U :=
-      Lp.mem_Lp_locU g_ns
-    apply Lp.ext
-    filter_upwards [(WkpU.weakDeriv_memLp f_lim n hn s).coeFn_toLp,
-        WeakmultiderivU_unique hU s f_lim.val (WkpU.hasWeakDeriv f_lim n hn s)
-          ⟨(g_ns : (Fin d → ℝ) →ₘ[μU d U] ℝ), hg_ns_loc⟩ hid,
-        (Lp.memLp g_ns).coeFn_toLp] with x h1 h2 h3
-    simp only [WkpU.derivtoLp, WkpU.weakDeriv] at h1 ⊢
-    rw [h1]; exact h2
-  rw [hfl_deriv]
-  exact (hg_ns n hn s).choose_spec.1
+  refine (show WkpU.derivtoLp f_lim n hn s = (hg_ns n hn s).choose from ?_) ▸
+    (hg_ns n hn s).choose_spec.1
+  apply Lp.ext
+  filter_upwards [(WkpU.weakDeriv_memLp f_lim n hn s).coeFn_toLp,
+      WeakmultiderivU_unique hU s f_lim.val (WkpU.hasWeakDeriv f_lim n hn s)
+        ⟨((hg_ns n hn s).choose : (Fin d → ℝ) →ₘ[μU d U] ℝ),
+          Lp.mem_Lp_locU (hg_ns n hn s).choose⟩ (hg_ns n hn s).choose_spec.2,
+      (Lp.memLp (hg_ns n hn s).choose).coeFn_toLp] with x h1 h2 h3
+  simp only [WkpU.derivtoLp, WkpU.weakDeriv] at h1 ⊢
+  rw [h1]; exact h2
 
 /-- Each `derivELpNorm` component of `fₙ - f_lim` tends to zero. -/
 lemma WkpU.derivELpNorm_tendsto_zero [Fact (1 ≤ p)]
@@ -924,26 +865,18 @@ lemma WkpU.derivELpNorm_tendsto_zero [Fact (1 ≤ p)]
   | zero =>
     have hs : s = Fin.elim0 := Subsingleton.elim _ _
     subst hs
-    have h0 : Tendsto (fun j => ‖WkpU.toLp (fₙ j) - WkpU.toLp f_lim‖) atTop (𝓝 0) := by
-      simp_rw [← dist_eq_norm]
-      exact tendsto_iff_dist_tendsto_zero.mp hg
-    have hz : Tendsto (fun j =>
-        ENNReal.ofReal ‖WkpU.toLp (fₙ j) - WkpU.toLp f_lim‖) atTop (𝓝 0) := by
-      simpa using ENNReal.tendsto_ofReal h0
-    exact hz.congr' <| Eventually.of_forall fun j =>
-      (WkpU.derivELpNorm_zero_sub_eq_toLp_norm (fₙ j) f_lim).symm
+    rw [← ENNReal.ofReal_zero]
+    refine (ENNReal.tendsto_ofReal (tendsto_iff_dist_tendsto_zero.mp hg)).congr' ?_
+    filter_upwards with j
+    simpa [dist_eq_norm] using (WkpU.derivELpNorm_zero_sub_eq_toLp_norm (fₙ j) f_lim).symm
   | succ m =>
     let nm : ℕ+ := ⟨m + 1, Nat.succ_pos m⟩
     have hnm : nm ≤ k := Nat.lt_succ_iff.mp hm
-    have key : Tendsto (fun j => ‖WkpU.derivtoLp (fₙ j) nm hnm s -
-        WkpU.derivtoLp f_lim nm hnm s‖) atTop (𝓝 0) := by
-      simp_rw [← dist_eq_norm]
-      exact tendsto_iff_dist_tendsto_zero.mp (hg_ns nm hnm s)
-    have hz : Tendsto (fun j =>
-        ENNReal.ofReal ‖WkpU.derivtoLp (fₙ j) nm hnm s -
-          WkpU.derivtoLp f_lim nm hnm s‖) atTop (𝓝 0) := by
-      simpa using ENNReal.tendsto_ofReal key
-    exact hz.congr' <| Eventually.of_forall fun j =>
+    rw [← ENNReal.ofReal_zero]
+    refine (ENNReal.tendsto_ofReal
+      (tendsto_iff_dist_tendsto_zero.mp (hg_ns nm hnm s))).congr' ?_
+    filter_upwards with j
+    simpa [dist_eq_norm] using
       (WkpU.derivELpNorm_sub_eq_derivtoLp_norm (fₙ j) f_lim nm hnm s).symm
 
 /-- The Sobolev space `W^{k,p}(U)` is complete. -/

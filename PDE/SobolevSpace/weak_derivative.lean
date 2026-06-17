@@ -50,27 +50,17 @@ lemma integral_muU_eq_volume_of_Cc
 lemma FderivCcinfty {d : ℕ+} {n : ℕ} {U : Set (Fin d → ℝ)} (s : Fin n → Fin d)
     {ψ : (Fin d → ℝ) → ℝ} (hψ : ψ ∈ Cc_inftyU d U)
     : (fun x => (iteratedFDeriv ℝ n ψ x) (unitSeq s)) ∈ Cc_inftyU d U := by
-
-       let ψdev := fun x => (iteratedFDeriv ℝ n ψ x) (unitSeq s)
        obtain ⟨ψ_comp, ψ_supp, ψ_diff⟩ := hψ
        let eval_at_s := ContinuousMultilinearMap.apply (𝕜 := ℝ) (fun _ => Fin d → ℝ) ℝ (unitSeq s)
-
-       have ψdev_comp : HasCompactSupport ψdev := by
-        have h_comp := HasCompactSupport.iteratedFDeriv (𝕜 := ℝ) ψ_comp n
-        exact HasCompactSupport.comp_left (hf := h_comp) (g := eval_at_s.toLinearMap) (hg := map_zero _)
-
-       have ψdev_supp : tsupport ψdev ⊆ U :=
-          (closure_mono (Function.support_comp_subset (map_zero eval_at_s) _)).trans
-            ((tsupport_iteratedFDeriv_subset n).trans ψ_supp)
-
-       have ψdev_diff : ContDiff ℝ ((⊤: ℕ∞) : WithTop ℕ∞) ψdev := by
-         have h0 : ((⊤: ℕ∞): WithTop ℕ∞) + ((n : ℕ∞): WithTop ℕ∞) ≤ ((⊤: ℕ∞) : WithTop ℕ∞)
-           := by simp only [← WithTop.coe_add, top_add]; rfl
-         rw [show ψdev = eval_at_s ∘ iteratedFDeriv ℝ n ψ by rfl]
-         exact (contDiff_const.clm_apply contDiff_id).comp
-               (ContDiff.iteratedFDeriv_right ψ_diff h0)
-
-       exact ⟨ψdev_comp, ψdev_supp, ψdev_diff⟩
+       refine ⟨?_, ?_, ?_⟩
+       · exact HasCompactSupport.comp_left (hf := HasCompactSupport.iteratedFDeriv (𝕜 := ℝ) ψ_comp n)
+                (g := eval_at_s.toLinearMap) (hg := map_zero _)
+       · exact (closure_mono (Function.support_comp_subset (map_zero eval_at_s)
+                (iteratedFDeriv ℝ n ψ))).trans ((tsupport_iteratedFDeriv_subset n).trans ψ_supp)
+       · have h0 : ((⊤: ℕ∞): WithTop ℕ∞) + ((n : ℕ∞): WithTop ℕ∞) ≤ ((⊤: ℕ∞) : WithTop ℕ∞) := by
+           simp only [← WithTop.coe_add, top_add]; rfl
+         exact (show ContDiff ℝ ((⊤: ℕ∞) : WithTop ℕ∞) (eval_at_s ∘ iteratedFDeriv ℝ n ψ) from
+           (contDiff_const.clm_apply contDiff_id).comp (ContDiff.iteratedFDeriv_right ψ_diff h0))
 
 
 /-- If `∫ ψ · f = ∫ ψ · g` for all `ψ ∈ Cc^∞(U)`, then `f =ᵃᵉ g` on `U`.
@@ -83,18 +73,14 @@ lemma IsOpen.ae_eq_of_integral_contDiff_smul_eq {d : ℕ+} {U : Set (Fin d → �
       ∫ x, ψ x • (f : (Fin d → ℝ) → ℝ) x ∂volume
     = ∫ x, ψ x • (g : (Fin d → ℝ) → ℝ) x ∂volume)
   : f =ᵐ[μU d U] g := by
-
     have : ∀ᵐ (x : Fin ↑d → ℝ), x ∈ U → f x - g x = 0 := by
       apply IsOpen.ae_eq_zero_of_integral_contDiff_smul_eq_zero hU (hf.sub hg)
       intro ψ ψ_diff ψ_comp ψ_supp
-      have Cc_psi : ψ ∈ Cc_inftyU d U := by exact ⟨ψ_comp, ψ_supp, ψ_diff⟩
       simp only [Pi.sub_apply, smul_sub]
-
       rw [integral_sub, sub_eq_zero]
-      · exact h ψ Cc_psi
+      · exact h ψ ⟨ψ_comp, ψ_supp, ψ_diff⟩
       · exact IntMulLocalintComp U hf ψ_comp ψ_supp ψ_diff.continuous
       · exact IntMulLocalintComp U hg ψ_comp ψ_supp ψ_diff.continuous
-
     show f =ᵐ[volume.restrict U] g
     rw [Filter.EventuallyEq, ae_restrict_iff' hU.measurableSet]
     filter_upwards [this] with x hx
@@ -180,13 +166,9 @@ lemma zeroWeakmultiDerivU {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ)) (hU : I
       =ᵐ[μU d U] (0 : (Fin d → ℝ) →ₘ[μU d U] ℝ) := by
     classical
     have hzero : IsWeakMultiDerivU U s (0 : Lp_locU d 1 U) 0 := by
-        rw [isWeakMultiDerivU_iff]
         intro ψ hψ
         have h0_ae : ∀ᵐ x ∂μU d U, ((0 : Lp_locU d 1 U) : (Fin d → ℝ) → ℝ) x = 0 := by
-          rw [show ((0 : Lp_locU d 1 U) : (Fin d → ℝ) →ₘ[μU d U] ℝ) = 0 from rfl,
-              show (0 : (Fin d → ℝ) →ₘ[μU d U] ℝ) =
-                  AEEqFun.mk 0 aestronglyMeasurable_zero from rfl]
-          exact AEEqFun.coeFn_mk 0 aestronglyMeasurable_zero
+          simpa using AEEqFun.coeFn_zero
         rw [integral_eq_zero_of_ae (h0_ae.mono fun x hx => by rw [hx, zero_smul, Pi.zero_apply]),
             integral_eq_zero_of_ae (h0_ae.mono fun x hx => by rw [hx, smul_zero, Pi.zero_apply]),
           smul_zero]
@@ -201,74 +183,40 @@ lemma WeakmultiDerivU_add {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ)) (hU : I
       WeakmultiderivU U (f + g) s h_add
       =ᵐ[μU d U]
       (WeakmultiderivU U f s hf + WeakmultiderivU U g s hg : (Fin d → ℝ) →ₘ[μU d U] ℝ) := by
-
       let fdev := WeakmultiderivU U f s hf
       let gdev := WeakmultiderivU U g s hg
       have f1 : IsWeakMultiDerivU U s f (fdev) := Classical.choose_spec hf
       have f2 : IsWeakMultiDerivU U s g (gdev) := Classical.choose_spec hg
-
-      have fint : LocallyIntegrableOn (f: (Fin d → ℝ) →ₘ[μU d U] ℝ) U volume
-        := LplocLocallyIntegU d 1 (le_refl 1) U hU f.prop
-      have gint : LocallyIntegrableOn (g: (Fin d → ℝ) →ₘ[μU d U] ℝ) U volume
-        := LplocLocallyIntegU d 1 (le_refl 1) U hU g.prop
-      have fdev_int : LocallyIntegrableOn (fdev: (Fin d → ℝ) →ₘ[μU d U] ℝ) U volume
-        := LplocLocallyIntegU d 1 (le_refl 1) U hU fdev.prop
-      have gdev_int : LocallyIntegrableOn (gdev: (Fin d → ℝ) →ₘ[μU d U] ℝ) U volume
-        := LplocLocallyIntegU d 1 (le_refl 1) U hU gdev.prop
-
-
+      have LI := fun h : Lp_locU d 1 U => LplocLocallyIntegU d 1 le_rfl U hU h.prop
       have dev_sum : IsWeakMultiDerivU U s (f+g) (fdev + gdev)  := by
          intro ψ hψ
-         simp only [IsWeakMultiDerivU] at f1 f2
          specialize f1 ψ hψ; specialize f2 ψ hψ
-
          let ψdev := fun x => (iteratedFDeriv ℝ n ψ x) (unitSeq s)
-         have ψdev_comp : HasCompactSupport ψdev := (FderivCcinfty s hψ).1
-         have ψdev_supp : tsupport ψdev ⊆ U := (FderivCcinfty s hψ).2.1
-         have ψdev_cont : Continuous ψdev := (FderivCcinfty s hψ).2.2.continuous
-
-         have hf_int : Integrable (fun x => (f : (Fin d → ℝ) →ₘ[μU d U] ℝ) x •
-              (iteratedFDeriv ℝ n ψ x) (unitSeq s)) (μU d U) := by
-            apply (Integrable.mono_measure _ (by unfold μU; exact Measure.restrict_le_self))
-            convert IntMulLocalintComp U fint ψdev_comp ψdev_supp ψdev_cont using 2
+         obtain ⟨ψdev_comp, ψdev_supp, ψdev_diff⟩ := FderivCcinfty s hψ
+         have hle : μU d U ≤ volume := by unfold μU; exact Measure.restrict_le_self
+         have hf_int : ∀ h : Lp_locU d 1 U, Integrable (fun x =>
+              (h : (Fin d → ℝ) →ₘ[μU d U] ℝ) x • ψdev x) (μU d U) := fun h => by
+            apply Integrable.mono_measure _ hle
+            convert IntMulLocalintComp U (LI h) ψdev_comp ψdev_supp ψdev_diff.continuous using 2
             simp [ψdev, smul_eq_mul, mul_comm]
-
-         have hg_int : Integrable (fun x => (g : (Fin d → ℝ) →ₘ[μU d U] ℝ) x •
-              (iteratedFDeriv ℝ n ψ x) (unitSeq s)) (μU d U) := by
-            apply (Integrable.mono_measure _ (by unfold μU; exact Measure.restrict_le_self))
-            convert IntMulLocalintComp U gint ψdev_comp ψdev_supp ψdev_cont using 2
-            simp [ψdev, smul_eq_mul, mul_comm]
-
          rcases hψ with ⟨ψ_comp, ψ_supp, ψ_diff⟩
-
-         have hfdev_int : Integrable (fun x => ψ x •
-            (fdev : (Fin d → ℝ) →ₘ[μU d U] ℝ) x) (μU d U) := by
-          refine (Integrable.mono_measure ?_ (by unfold μU; exact Measure.restrict_le_self))
-          convert IntMulLocalintComp U fdev_int ψ_comp ψ_supp ψ_diff.continuous using 2
-
-         have hgdev_int : Integrable (fun x => ψ x •
-            (gdev : (Fin d → ℝ) →ₘ[μU d U] ℝ) x) (μU d U) := by
-          refine (Integrable.mono_measure ?_ (by unfold μU; exact Measure.restrict_le_self))
-          convert IntMulLocalintComp U gdev_int ψ_comp ψ_supp ψ_diff.continuous using 2
-
+         have hdev_int : ∀ h : Lp_locU d 1 U, Integrable (fun x =>
+            ψ x • (h : (Fin d → ℝ) →ₘ[μU d U] ℝ) x) (μU d U) := fun h => by
+          refine Integrable.mono_measure ?_ hle
+          convert IntMulLocalintComp U (LI h) ψ_comp ψ_supp ψ_diff.continuous using 2
          calc ∫ x, (f + g : (Fin d → ℝ) →ₘ[μU d U] ℝ) x • (iteratedFDeriv ℝ n ψ x) (unitSeq s) ∂ μU d U
-              = ∫ (x : Fin ↑d → ℝ), ((f : (Fin d → ℝ) →ₘ[μU d U] ℝ) x + (g : (Fin d → ℝ) →ₘ[μU d U] ℝ) x)
-                                      • (iteratedFDeriv ℝ n ψ x) (unitSeq s) ∂ μU d U := by
-                  apply integral_congr_ae
+              = ∫ x, ((f : (Fin d → ℝ) →ₘ[μU d U] ℝ) x • (iteratedFDeriv ℝ n ψ x) (unitSeq s)
+                    + (g : (Fin d → ℝ) →ₘ[μU d U] ℝ) x • (iteratedFDeriv ℝ n ψ x) (unitSeq s)) ∂ μU d U := by
+                  refine integral_congr_ae ?_
                   filter_upwards [AEEqFun.coeFn_add f.1 g.1] with x hx
-                  rw [hx, Pi.add_apply]
-            _ = (-1 : ℝ)^(n:ℕ) • ∫ x, ψ x • (fdev + gdev : (Fin d → ℝ) →ₘ[μU d U] ℝ) x ∂ μU d U := by
-                  simp_rw [add_smul];
-                  rw [integral_add hf_int hg_int, f1, f2, ← smul_add]
-                  rw [← integral_add (μ := μU d U)
-                      (by simpa [smul_eq_mul] using hfdev_int)
-                      (by simpa [smul_eq_mul] using hgdev_int)]
-                  congr 1
-                  apply integral_congr_ae
+                  rw [hx, Pi.add_apply, add_smul]
+            _ = (-1 : ℝ)^n • ∫ x, ψ x • (fdev + gdev : (Fin d → ℝ) →ₘ[μU d U] ℝ) x ∂ μU d U := by
+                  rw [integral_add (hf_int f) (hf_int g), f1, f2, ← smul_add,
+                      ← integral_add (μ := μU d U) (by simpa [smul_eq_mul] using hdev_int fdev)
+                        (by simpa [smul_eq_mul] using hdev_int gdev)]
+                  refine congrArg _ (integral_congr_ae ?_)
                   filter_upwards [AEEqFun.coeFn_add fdev.1 gdev.1] with x hx
                   simp [hx, Pi.add_apply, mul_add]
-            _ = _ := by simp
-
       exact ⟨⟨fdev + gdev, dev_sum⟩,
                WeakmultiderivU_unique hU s (f+g) ⟨fdev + gdev, dev_sum⟩ (fdev + gdev) dev_sum⟩
 
@@ -280,43 +228,22 @@ lemma WeakmultiDerivU_smul {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ)) (hU : 
       WeakmultiderivU U (c • f) s h_smul
       =ᵐ[μU d U] (c • WeakmultiderivU U f s hf : (Fin d → ℝ) →ₘ[μU d U] ℝ) := by
       classical
-
-      have fint : LocallyIntegrableOn (f: (Fin d → ℝ) →ₘ[μU d U] ℝ) U volume
-        := LplocLocallyIntegU d 1 (le_refl 1) U hU f.prop
       let fdev := WeakmultiderivU U f s hf
-      have fdev_int : LocallyIntegrableOn (fdev: (Fin d → ℝ) →ₘ[μU d U] ℝ) U volume
-        := LplocLocallyIntegU d 1 (le_refl 1) U hU fdev.prop
       have f1 : IsWeakMultiDerivU U s f (fdev) := Classical.choose_spec hf
-
       have dev_smul : IsWeakMultiDerivU U s (c • f) (c • fdev)  := by
          intro ψ hψ
-         simp only [IsWeakMultiDerivU] at f1
          specialize f1 ψ hψ
-
-         let ψdev := fun x => (iteratedFDeriv ℝ n ψ x) (unitSeq s)
-         have ψdev_comp : HasCompactSupport ψdev := (FderivCcinfty s hψ).1
-         have ψdev_supp : tsupport ψdev ⊆ U := (FderivCcinfty s hψ).2.1
-         have ψdev_cont : Continuous ψdev := (FderivCcinfty s hψ).2.2.continuous
-
-         rcases hψ with ⟨ψ_comp, ψ_supp, ψ_diff⟩
-
-         have hfdev_int: Integrable (fun x => ψ x * (fdev : (Fin d → ℝ) →ₘ[μU d U] ℝ) x) volume := by
-            exact IntMulLocalintComp U fdev_int ψ_comp ψ_supp ψ_diff.continuous
-
-         calc
-           ∫ (x : Fin ↑d → ℝ), (c • f : (Fin d → ℝ) →ₘ[μU d U] ℝ) x • (iteratedFDeriv ℝ n ψ x) (unitSeq s) ∂ μU d U
-            = ∫ (x : Fin ↑d → ℝ), c • ((f : (Fin d → ℝ) →ₘ[μU d U] ℝ) x
-                                      • (iteratedFDeriv ℝ n ψ x) (unitSeq s)) ∂ μU d U
-             := by
-              apply integral_congr_ae
-              filter_upwards [AEEqFun.coeFn_smul c f.1] with x hx
-              simp [hx]; linarith
-           _ = _ := by
-             rw [integral_smul, f1, smul_comm]; congr 1; rw [← integral_smul];
-             apply integral_congr_ae
-             filter_upwards [AEEqFun.coeFn_smul c fdev.1] with x hx
-             rw [smul_comm]; congr 1; convert hx.symm using 1
-
+         calc ∫ x, (c • f : (Fin d → ℝ) →ₘ[μU d U] ℝ) x • (iteratedFDeriv ℝ n ψ x) (unitSeq s) ∂ μU d U
+              = ∫ x, c • ((f : (Fin d → ℝ) →ₘ[μU d U] ℝ) x
+                    • (iteratedFDeriv ℝ n ψ x) (unitSeq s)) ∂ μU d U := by
+                  refine integral_congr_ae ?_
+                  filter_upwards [AEEqFun.coeFn_smul c f.1] with x hx
+                  simp [hx]; linarith
+            _ = _ := by
+                  rw [integral_smul, f1, smul_comm, ← integral_smul]
+                  refine congrArg _ (integral_congr_ae ?_)
+                  filter_upwards [AEEqFun.coeFn_smul c fdev.1] with x hx
+                  rw [smul_comm]; congr 1; convert hx.symm using 1
       exact ⟨⟨c • fdev, dev_smul⟩,
             WeakmultiderivU_unique hU s (c • f) ⟨c • fdev, dev_smul⟩ (c • fdev) dev_smul⟩
 
