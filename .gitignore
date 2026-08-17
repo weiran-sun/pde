@@ -3,6 +3,15 @@
 .lake/
 build/
 _site/
+blueprint/
+book/
+build-web.sh
+dep_graph_document_template.html
+home_page/
+lakefile.lean.bak
+lakefile.toml.bak
+serve_book.py
+sync-versions.sh
 
 # IDE files
 .vscode/
@@ -21,3 +30,4 @@ analysis/.repair
 # miscellaneous files
 **/tobeIgnored/
 **/tmp
+.github/
