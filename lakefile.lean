@@ -14,7 +14,7 @@ package «PDE» where
 
 -- Require Mathlib (the comprehensive library of mathematics in Lean)
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "v4.30.0"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.33.0-rc1"
 
 -- This library is needed to build the online version.
 -- If ../book/lakefile.lean requires verso @ "v4.X.Y", then this line should require
@@ -30,13 +30,17 @@ require MD4Lean from git "https://github.com/acmepjz/md4lean" @ "main"
 lean_lib «PDE» where
   -- add any library configuration options here
 
+@[default_target]
+lean_lib «Problems» where
+  -- root defaults to all target PDE analysis problems
+
 lean_exe "literate-extract" where
   root := `LiterateExtract
   supportInterpreter := true
 
 meta if get_config? env = some "dev" then
 require «doc-gen4» from git
-  "https://github.com/leanprover/doc-gen4" @ "v4.27.0"
+  "https://github.com/leanprover/doc-gen4" @ "v4.33.0-rc1"
 
 
 module_facet literate mod : System.FilePath := do
