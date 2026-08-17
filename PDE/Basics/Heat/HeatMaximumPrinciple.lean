@@ -196,7 +196,7 @@ lemma iteratedFDeriv_two_eval_xx_eq_iteratedDeriv_slice
       iteratedFDeriv ℝ 2 (fun x : ℝ => F (L x + (0, t))) x₀ =
         (iteratedFDeriv ℝ 2 (fun p : ℝ × ℝ => F (p + (0, t))) (L x₀)).compContinuousLinearMap
           (fun _ => L) := by
-    simpa [Function.comp] using
+    exact
       ContinuousLinearMap.iteratedFDeriv_comp_right (𝕜 := ℝ) (n := 2)
         (f := fun p : ℝ × ℝ => F (p + (0, t))) (g := L) hshift x₀ (by simp)
 
@@ -329,7 +329,7 @@ lemma u_t_continuous {l T x₀ : ℝ} {u : ℝ → ℝ → ℝ}
       apply ContinuousWithinAt.congr_of_eventuallyEq (f := fun t ↦ derivWithin g (Icc 0 T) t)
 
       · have h_g_C2 : ContDiffOn ℝ 2 g (Icc 0 T) := by
-          simpa [g] using
+          exact
             h_smooth.comp (((contDiff_const).prodMk contDiff_id).contDiffOn)
               (fun t ht ↦ ⟨⟨le_of_lt hx_pos, le_of_lt hx_lt⟩, ht⟩)
         have h_deriv_cont :=
@@ -482,7 +482,7 @@ lemma heat_equation_no_interior_max
 
     have h_vt_zero : deriv (fun t' => v x₀ t') t₀ = 0 := by
         exact (local_max_implies_second_deriv_nonpos h_smooth_time <| by
-          simpa using
+          exact
             (hmax.isLocalMax h_nhds).comp_tendsto (g := fun t => (x₀, t))
               (continuous_const.prodMk continuous_id).continuousAt).1
 
@@ -490,7 +490,7 @@ lemma heat_equation_no_interior_max
         deriv (fun x' => deriv (fun x'' => v x'' t₀) x') x₀ ≤ 0 := by
       simpa using
         (local_max_implies_second_deriv_nonpos h_smooth_space <| by
-          simpa using
+          exact
             (hmax.isLocalMax h_nhds).comp_tendsto (g := fun x => (x, t₀))
               (continuous_id.prodMk continuous_const).continuousAt).2
 

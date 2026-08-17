@@ -119,13 +119,15 @@ lemma deriv_sqrt_inv {x : ℝ} (hx : x > 0) :
   have hsqrt : HasDerivAt Real.sqrt (1 / (2 * Real.sqrt x)) x :=
     Real.hasDerivAt_sqrt hx.ne.symm
   have hpos : Real.sqrt x ≠ 0 := (Real.sqrt_pos.mpr hx).ne'
-  have := HasDerivAt.inv hsqrt hpos
-  convert this using 1
-  field_simp [hpos]
-  · ext τ
-    simp [one_div] -- Maps 1 / f x to (f x)⁻¹
-  · rw [Real.sq_sqrt hx.le]
-    field_simp [ne_of_gt hx]
+  have h_fun : (fun τ => 1 / Real.sqrt τ) = Real.sqrt⁻¹ := by
+    ext τ
+    exact one_div (Real.sqrt τ)
+  have h_deriv : -(1 / (2 * Real.sqrt x)) / (Real.sqrt x) ^ 2 = -(1 / (2 * x)) * (1 / Real.sqrt x) := by
+    rw [Real.sq_sqrt hx.le]
+    have hx_ne : x ≠ 0 := hx.ne.symm
+    field_simp [hpos, hx_ne]
+  rw [h_fun, ← h_deriv]
+  exact HasDerivAt.inv hsqrt hpos
 
 
 /-- Derivative of the exponential term `exp(-(x²)/(4αt))` with respect to `x`. -/
@@ -136,10 +138,14 @@ lemma deriv_exp_heatKernel {α t x : ℝ} (ht : 0 < t) (hα : 0 < α) :
     simpa [pow_two] using (hasDerivAt_pow (x := x) (n := 2))
   have hg : HasDerivAt (fun x' => -(x'^2) / (4 * α * t))
                         (-(1 / (4 * α * t)) * (2 * x)) x := by
-    have := hpow.const_mul (-(1 / (4 * α * t)))
-    convert this using 1; ext x'; field_simp
-  simpa [mul_comm, mul_left_comm, mul_assoc, pow_two] using
-    (Real.hasDerivAt_exp (x := (-(x^2) / (4 * α * t)))).comp x hg
+    have h_fun : (fun x' => -(1 / (4 * α * t)) * x'^2) = (fun x' => -(x'^2) / (4 * α * t)) := by
+      ext x'; ring
+    have h_base := hpow.const_mul (-(1 / (4 * α * t)))
+    rwa [h_fun] at h_base
+  have h_comp := (Real.hasDerivAt_exp (x := (-(x^2) / (4 * α * t)))).comp x hg
+  have h_deriv : Real.exp (-(x^2) / (4 * α * t)) * (-(1 / (4 * α * t)) * (2 * x)) =
+                 (-(1 / (4 * α * t)) * (2 * x)) * Real.exp (-(x^2) / (4 * α * t)) := mul_comm _ _
+  rwa [h_deriv] at h_comp
 
 
 /-! ### Time Derivative -/
@@ -159,28 +165,45 @@ lemma hasDerivAt_heatKernel_t (hα : 0 < α) {t x : ℝ} (ht : 0 < t) :
     have hg : HasDerivAt (fun τ ↦ 4 * Real.pi * α * τ) (4 * Real.pi * α) t := by
       simpa using (hasDerivAt_id t).const_mul (4 * Real.pi * α)
     have hpos : 4 * Real.pi * α * t > 0 := by positivity
-    have := (deriv_sqrt_inv hpos).comp t hg
-    convert this using 1
-    field_simp [ne_of_gt hpos]
+    have h_comp := (deriv_sqrt_inv hpos).comp t hg
+    have h_deriv : (-(1 / (2 * (4 * Real.pi * α * t))) * (1 / Real.sqrt (4 * Real.pi * α * t))) * (4 * Real.pi * α) =
+                   -(1 / (2 * t)) * (1 / Real.sqrt (4 * Real.pi * α * t)) := by
+      have ht_ne : t ≠ 0 := ht.ne.symm
+      have h_denom : 4 * Real.pi * α * t ≠ 0 := hpos.ne.symm
+      have hsqrt_ne : Real.sqrt (4 * Real.pi * α * t) ≠ 0 := (Real.sqrt_pos.mpr hpos).ne.symm
+      field_simp [ht_ne, h_denom, hsqrt_ne]
+    rwa [h_deriv] at h_comp
 
   -- Derivative of the exponent -(x²)/(4ατ) with respect to t
   have h_inside : HasDerivAt (fun τ => -(x^2) / (4 * α * τ))
                               ((1 / (4 * α)) * (1 / t^2) * x^2) t := by
-    have hexp1 : HasDerivAt (fun τ => τ⁻¹) (-(t^2)⁻¹) t := by
-      simpa using hasDerivAt_inv (ne_of_gt ht)
-    convert (hexp1.const_mul (-(x^2) / (4 * α))) using 1
-    · ext τ; field_simp
-    · field_simp
+    have ht_ne : t ≠ 0 := ht.ne.symm
+    have h_base := (hasDerivAt_inv ht_ne).const_mul (-(x^2) / (4 * α))
+    have h_fun : (fun τ => (-(x^2) / (4 * α)) * τ⁻¹) = (fun τ => -(x^2) / (4 * α * τ)) := by
+      ext τ
+      simp only [div_eq_mul_inv, mul_inv]
+      ring
+    have h_deriv : (-(x^2) / (4 * α)) * -(t^2)⁻¹ = (1 / (4 * α)) * (1 / t^2) * x^2 := by
+      simp only [div_eq_mul_inv, mul_inv]
+      ring
+    rwa [h_fun, h_deriv] at h_base
 
   -- Apply chain rule through the exponential
   have h_exp : HasDerivAt (fun τ => Real.exp (-(x^2) / (4 * α * τ)))
                           (((1 / (4 * α)) * (1 / t^2) * x^2) *
                            Real.exp (-(x^2) / (4 * α * t))) t := by
-    simpa [mul_comm, mul_left_comm, mul_assoc] using
-      (Real.hasDerivAt_exp (x := (-(x^2) / (4 * α * t)))).comp t h_inside
+    have h_comp := (Real.hasDerivAt_exp (x := (-(x^2) / (4 * α * t)))).comp t h_inside
+    have h_deriv : Real.exp (-(x^2) / (4 * α * t)) * ((1 / (4 * α)) * (1 / t^2) * x^2) =
+                   ((1 / (4 * α)) * (1 / t^2) * x^2) * Real.exp (-(x^2) / (4 * α * t)) := mul_comm _ _
+    rwa [h_deriv] at h_comp
 
   -- Apply product rule to combine the two parts
-  simpa [mul_comm, mul_left_comm, mul_assoc] using h_coef.mul h_exp
+  have h_mul := h_coef.mul h_exp
+  have h_deriv : (-(1 / (2 * t)) * (1 / Real.sqrt (4 * Real.pi * α * t))) * Real.exp (-(x^2) / (4 * α * t)) +
+                 (1 / Real.sqrt (4 * Real.pi * α * t)) * (((1 / (4 * α)) * (1 / t^2) * x^2) * Real.exp (-(x^2) / (4 * α * t))) =
+                 (-(1 / (2 * t)) * (1 / Real.sqrt (4 * Real.pi * α * t))) * Real.exp (-(x^2) / (4 * α * t)) +
+                 (1 / Real.sqrt (4 * Real.pi * α * t)) * ((1 / (4 * α)) * (1 / t^2) * x^2) * Real.exp (-(x^2) / (4 * α * t)) := by ring
+  rwa [h_deriv] at h_mul
 
 
 /-! ### First Spatial Derivative -/

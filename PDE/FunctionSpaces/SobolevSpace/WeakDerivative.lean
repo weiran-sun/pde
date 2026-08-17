@@ -1,6 +1,6 @@
 import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
 
-import PDE.SobolevSpace.Lp_function_spaces
+import PDE.FunctionSpaces.SobolevSpace.LpFunctionSpaces
 
 open MeasureTheory
 
@@ -231,13 +231,13 @@ lemma WeakmultiDerivU_add {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ)) (hU : I
               (iteratedFDeriv ℝ n ψ x) (unitSeq s)) (μU d U) := by
             apply (Integrable.mono_measure _ (by unfold μU; exact Measure.restrict_le_self))
             convert IntMulLocalintComp U fint ψdev_comp ψdev_supp ψdev_cont using 2
-            simp [ψdev, smul_eq_mul, mul_comm]
+            all_goals first | rfl | simp [ψdev, smul_eq_mul, mul_comm]
 
          have hg_int : Integrable (fun x => (g : (Fin d → ℝ) →ₘ[μU d U] ℝ) x •
               (iteratedFDeriv ℝ n ψ x) (unitSeq s)) (μU d U) := by
             apply (Integrable.mono_measure _ (by unfold μU; exact Measure.restrict_le_self))
             convert IntMulLocalintComp U gint ψdev_comp ψdev_supp ψdev_cont using 2
-            simp [ψdev, smul_eq_mul, mul_comm]
+            all_goals first | rfl | simp [ψdev, smul_eq_mul, mul_comm]
 
          rcases hψ with ⟨ψ_comp, ψ_supp, ψ_diff⟩
 
@@ -245,11 +245,13 @@ lemma WeakmultiDerivU_add {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ)) (hU : I
             (fdev : (Fin d → ℝ) →ₘ[μU d U] ℝ) x) (μU d U) := by
           refine (Integrable.mono_measure ?_ (by unfold μU; exact Measure.restrict_le_self))
           convert IntMulLocalintComp U fdev_int ψ_comp ψ_supp ψ_diff.continuous using 2
+          all_goals rfl
 
          have hgdev_int : Integrable (fun x => ψ x •
             (gdev : (Fin d → ℝ) →ₘ[μU d U] ℝ) x) (μU d U) := by
           refine (Integrable.mono_measure ?_ (by unfold μU; exact Measure.restrict_le_self))
           convert IntMulLocalintComp U gdev_int ψ_comp ψ_supp ψ_diff.continuous using 2
+          all_goals rfl
 
          calc ∫ x, (f + g : (Fin d → ℝ) →ₘ[μU d U] ℝ) x • (iteratedFDeriv ℝ n ψ x) (unitSeq s) ∂ μU d U
               = ∫ (x : Fin ↑d → ℝ), ((f : (Fin d → ℝ) →ₘ[μU d U] ℝ) x + (g : (Fin d → ℝ) →ₘ[μU d U] ℝ) x)
@@ -315,7 +317,7 @@ lemma WeakmultiDerivU_smul {d : ℕ+} {n : ℕ} (U : Set (Fin d → ℝ)) (hU : 
              rw [integral_smul, f1, smul_comm]; congr 1; rw [← integral_smul];
              apply integral_congr_ae
              filter_upwards [AEEqFun.coeFn_smul c fdev.1] with x hx
-             rw [smul_comm]; congr 1; convert hx.symm using 1
+             rw [smul_comm]; congr 1; convert hx.symm using 1 <;> rfl
 
       exact ⟨⟨c • fdev, dev_smul⟩,
             WeakmultiderivU_unique hU s (c • f) ⟨c • fdev, dev_smul⟩ (c • fdev) dev_smul⟩

@@ -87,7 +87,7 @@ lemma LplocLocallyIntegU (d : ℕ+) (p : ℝ≥0∞) (hp : 1 ≤ p) (U : Set (Fi
   rw [locallyIntegrableOn_iff hU.isLocallyClosed]
   intro K hKU hK
   letI : IsFiniteMeasure (volume.restrict K) := ⟨by simpa using hK.measure_lt_top⟩
-  simpa [IntegrableOn] using (hf K hK hKU).integrable (hq1 := hp)
+  exact (hf K hK hKU).integrable (hq1 := hp)
 
 /-- Every function in `Lp_loc d p` (with `p ≥ 1`) is locally integrable on `ℝᵈ`.
     Derived from `LplocLocallyIntegU` applied to `U = Set.univ`. -/

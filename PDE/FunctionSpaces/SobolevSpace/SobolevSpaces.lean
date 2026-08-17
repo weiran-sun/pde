@@ -1,5 +1,5 @@
-import PDE.SobolevSpace.Lp_function_spaces
-import PDE.SobolevSpace.weak_derivative
+import PDE.FunctionSpaces.SobolevSpace.LpFunctionSpaces
+import PDE.FunctionSpaces.SobolevSpace.WeakDerivative
 
 open MeasureTheory
 open ENNReal
@@ -471,8 +471,7 @@ lemma WkpU.eLpNorm_weakDeriv_eq {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
     rcases n with ⟨m | m, hm⟩
     · cases hm
     · simp only [WkpU.weakDeriv, WkpU.derivELpNorm]
-      dsimp
-      rw [dif_pos (show m + 1 ≤ k from hn)]
+      simp [show m + 1 ≤ k from hn]
 
 
 /-- Each weak-derivative eLpNorm is bounded by the Sobolev eNorm. -/
@@ -587,14 +586,14 @@ lemma integral_tendsto_of_Lploc_tendsto
       exact (hψ.2.2.continuous).memLp_of_hasCompactSupport hψ.1
 
     have hInt_g : Integrable (fun x => g x * ψ x) (μU d U) := by
-      simpa [Pi.mul_apply] using MemLp.integrable_mul hg hψ_Lq
+      exact MemLp.integrable_mul hg hψ_Lq
 
     have hfg : ∀ i, MemLp (fun x => f i x - g x) p (μU d U)
       := fun i => (hf i).sub hg
 
     have hInt_diff : ∀ i, Integrable (fun x => (f i x - g x) * ψ x) (μU d U) := by
       intro i
-      simpa [Pi.mul_apply] using MemLp.integrable_mul (hfg i) hψ_Lq
+      exact MemLp.integrable_mul (hfg i) hψ_Lq
 
     have hstep2 : Tendsto (fun i => ∫ x, (f i x - g x) * ψ x ∂μU d U) atTop (𝓝 0) := by
       set C := eLpNorm ψ q (μU d U)
@@ -622,7 +621,7 @@ lemma integral_tendsto_of_Lploc_tendsto
                           (memLp_one_iff_integrable.mpr h_int).eLpNorm_lt_top.ne
                           hR_ne_top).mpr
                           (by
-                            simpa [C, smul_eq_mul, mul_comm, mul_left_comm, mul_assoc] using
+                            simpa [C, Pi.mul_def, smul_eq_mul, mul_comm, mul_left_comm, mul_assoc] using
                               (MeasureTheory.eLpNorm_smul_le_mul_eLpNorm
                                 (μ := μU d U)
                                 (p := p) (q := q) (r := 1)
@@ -956,5 +955,67 @@ instance instCompleteSpace {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
   exact ⟨f_lim, (WkpU.tendsto_iff_all_derivELpNorm).mpr
     (WkpU.derivELpNorm_tendsto_zero f_lim hf_toLp hf_deriv)⟩
 
+
+/-- `AEEqFun.coeFn_add` specialised to the `WkpU` coercion `⇑(f + g)`. -/
+lemma WkpU.coeFn_add {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
+    {U : Set (Fin d → ℝ)} {hU : IsOpen U} (f g : WkpU d k p U hU) :
+    ⇑(f + g) =ᵐ[μU d U] fun x => f x + g x :=
+  AEEqFun.coeFn_add f.val.val g.val.val
+
+/-- `AEEqFun.coeFn_smul` specialised to the `WkpU` coercion `⇑(c • f)`. -/
+lemma WkpU.coeFn_smul {d : ℕ+} {k : ℕ} {p : ℝ≥0∞}
+    {U : Set (Fin d → ℝ)} {hU : IsOpen U} (c : ℝ) (f : WkpU d k p U hU) :
+    ⇑(c • f) =ᵐ[μU d U] fun x => c • f x :=
+  AEEqFun.coeFn_smul c f.val.val
+
+/-- `toLp` commutes with scalar multiplication. -/
+lemma WkpU.toLp_smul {d : ℕ+} {k : ℕ} {p : ℝ≥0∞} {U : Set (Fin d → ℝ)} {hU : IsOpen U}
+    [Fact (1 ≤ p)] (c : ℝ) (f : WkpU d k p U hU) :
+    WkpU.toLp (c • f) = c • WkpU.toLp f := by
+  simp only [WkpU.toLp]
+  rw [MemLp.toLp_congr (WkpU.memLp (c • f)) ((WkpU.memLp f).const_smul c)
+        (WkpU.coeFn_smul c f),
+      MemLp.toLp_const_smul]
+
+/-- `toLp` commutes with addition. -/
+lemma WkpU.toLp_add {d : ℕ+} {k : ℕ} {p : ℝ≥0∞} {U : Set (Fin d → ℝ)} {hU : IsOpen U}
+    [Fact (1 ≤ p)] (f g : WkpU d k p U hU) :
+    WkpU.toLp (f + g) = WkpU.toLp f + WkpU.toLp g := by
+  simp only [WkpU.toLp]
+  rw [MemLp.toLp_congr (WkpU.memLp (f + g)) ((WkpU.memLp f).add (WkpU.memLp g))
+        (WkpU.coeFn_add f g),
+      MemLp.toLp_add]
+
+/-- `toLp` as a linear map `W^{k,p}(U) →ₗ[ℝ] Lᵖ(U)`. -/
+noncomputable def WkpU.toLpₗ {d : ℕ+} {k : ℕ} {p : ℝ≥0∞} {U : Set (Fin d → ℝ)} {hU : IsOpen U}
+    [Fact (1 ≤ p)] : WkpU d k p U hU →ₗ[ℝ] Lp ℝ p (μU d U) where
+  toFun := WkpU.toLp
+  map_add' := WkpU.toLp_add
+  map_smul' := fun c f => WkpU.toLp_smul c f
+
+/-- `toLp` commutes with finite sums. -/
+lemma WkpU.toLp_sum {d : ℕ+} {k : ℕ} {p : ℝ≥0∞} {U : Set (Fin d → ℝ)} {hU : IsOpen U}
+    [Fact (1 ≤ p)] {m : ℕ} (c : Fin m → ℝ) (x : Fin m → WkpU d k p U hU) :
+    WkpU.toLp (∑ i, c i • x i) = ∑ i, c i • WkpU.toLp (x i) := by
+  change WkpU.toLpₗ (∑ i, c i • x i) = ∑ i, c i • WkpU.toLpₗ (x i)
+  simp only [map_sum, map_smul]
+
+/-- `toLp` as a **continuous linear map** `W^{k,p}(U) →L[ℝ] Lᵖ(U)`, of operator norm
+at most `1` (`norm_toLp_le`). -/
+noncomputable def WkpU.toLpCLM {d : ℕ+} {k : ℕ} {p : ℝ≥0∞} {U : Set (Fin d → ℝ)}
+    {hU : IsOpen U} [Fact (1 ≤ p)] : WkpU d k p U hU →L[ℝ] Lp ℝ p (μU d U) :=
+  LinearMap.mkContinuous WkpU.toLpₗ 1 (fun f => by
+    rw [one_mul]
+    exact WkpU.norm_toLp_le f)
+
+@[simp] lemma WkpU.toLpCLM_apply {d : ℕ+} {k : ℕ} {p : ℝ≥0∞} {U : Set (Fin d → ℝ)}
+    {hU : IsOpen U} [Fact (1 ≤ p)] (f : WkpU d k p U hU) :
+    WkpU.toLpCLM f = WkpU.toLp f := rfl
+
+/-- The projection `toLpCLM` is non-expansive. -/
+lemma WkpU.norm_toLpCLM_le {d : ℕ+} {k : ℕ} {p : ℝ≥0∞} {U : Set (Fin d → ℝ)}
+    {hU : IsOpen U} [Fact (1 ≤ p)] :
+    ‖(WkpU.toLpCLM : WkpU d k p U hU →L[ℝ] Lp ℝ p (μU d U))‖ ≤ 1 :=
+  LinearMap.mkContinuous_norm_le _ zero_le_one _
 
 end Sobolev

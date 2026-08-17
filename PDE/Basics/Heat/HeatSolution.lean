@@ -448,8 +448,11 @@ lemma integrable_heatKernel_mul_of_Linfty
      rw [Real.norm_eq_abs, abs_abs]
      exact hBound y
 
-    simpa [mul_comm]
-      using Integrable.smul_of_top_right
+    have h_fun : (fun y : ℝ => heatKernel α (x - y) t * |g y|)
+        = (fun y => |g y| * heatKernel α (x - y) t) := by
+      ext y; exact mul_comm _ _
+    rw [h_fun]
+    exact Integrable.smul_of_top_right
          (integrable_heatKernel_slice hα ht x) (Linfty_g)
 
 
@@ -458,7 +461,7 @@ lemma integrable_heatKernel_mul_of_L1
     (hα : 0 < α) (ht : 0 < t)
     (hg : Integrable g) :
     Integrable (fun y : ℝ => heatKernel α (x - y) t * g y) := by
-   simpa using Integrable.smul_of_top_right hg (Linfty_heatKernel hα ht)
+   exact Integrable.smul_of_top_right hg (Linfty_heatKernel hα ht)
 
 
 lemma aestronglyMeasurable_heatKernel_mul
@@ -487,7 +490,7 @@ lemma integ_HKt_mul_of_L1
     (hα : 0 < α) (ht : 0 < t)
     (hg : Integrable g) :
     Integrable (fun y : ℝ => HKt α (x - y) t * g y) := by
-   simpa using Integrable.smul_of_top_right hg (HKt_Linfinity_bound ht hα)
+   exact Integrable.smul_of_top_right hg (HKt_Linfinity_bound ht hα)
 
 
 lemma aestronglyMeasurable_HKx_mul
@@ -502,7 +505,7 @@ lemma integ_HKx_mul_of_L1
     (hα : 0 < α) (ht : 0 < t)
     (hg : Integrable g) :
     Integrable (fun y : ℝ => HKx α (x - y) t * g y) := by
-   simpa using Integrable.smul_of_top_right hg (HKx_Linfinity_bound ht hα)
+   exact Integrable.smul_of_top_right hg (HKx_Linfinity_bound ht hα)
 
 
 lemma aestronglyMeasurable_HKxx_mul
@@ -517,7 +520,7 @@ lemma integ_HKxx_mul_of_L1
     (hα : 0 < α) (ht : 0 < t)
     (hg : Integrable g) :
     Integrable (fun y : ℝ => HKxx α (x - y) t * g y) := by
-   simpa using Integrable.smul_of_top_right hg (HKxx_Linfinity_bound ht hα)
+   exact Integrable.smul_of_top_right hg (HKxx_Linfinity_bound ht hα)
 
 end Integrability
 

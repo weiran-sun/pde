@@ -68,8 +68,9 @@ lemma heatKernel_mass_one_x_sub_y_even
   have h_translate :
       ∫ y, heatKernel α (y - x) t = ∫ y, heatKernel α y t := by
     -- `y - x = (-x) + y`
-    simpa [add_comm] using (MeasureTheory.integral_add_left_eq_self (μ := volume) (g := -x)
-    (f := fun y : ℝ => heatKernel α y t))
+    simp only [sub_eq_add_neg]
+    exact MeasureTheory.integral_add_right_eq_self (μ := volume) (g := -x)
+      (f := fun y : ℝ => heatKernel α y t)
   have hMass0 : ∫ y, heatKernel α y t = (1 : ℝ) :=
     integral_heatKernel_one_gaussian (α := α) (t := t) hα ht
   calc
@@ -104,7 +105,7 @@ lemma heat_maximum_principle
 
     have hIntR :
       Integrable (fun y : ℝ => heatKernel α (x - y) t * B) := by
-       simpa [smul_eq_mul, mul_comm] using ((integrable_heatKernel_slice hα ht x).smul B)
+       exact (integrable_heatKernel_slice hα ht x).mul_const B
 
     have hIntL :
       Integrable (fun y : ℝ => heatKernel α (x - y) t * |g y|) :=
@@ -264,7 +265,8 @@ lemma integral_indicator_tail_even {f : ℝ → ℝ} {R : ℝ} (hR : 0 < R)
       rw [m.integrableOn_map_iff]
       simp_rw [Function.comp_def, Set.neg_preimage, Set.neg_Iic, neg_neg]
       convert hint using 2
-      aesop
+      · aesop
+      · exact heven _
     rw [integrable_indicator_iff measurableSet_Iic]
     exact h_int_left
 
@@ -352,6 +354,150 @@ lemma gaussian_tail_bound_by_weighted {R : ℝ} (hR : 0 < R) :
   calc ∫ z in Set.Ici R, Real.exp (-z^2)
       ≤ (1 / R) * ∫ z in Set.Ici R, z * Real.exp (-z^2) := h_main
     _ ≤ (1 / R) * ∫ z in Set.Ici 0, z * Real.exp (-z^2) := by gcongr
+
+lemma heatKernel_tail_tendsto_zero
+    {α δ x : ℝ} (hα : 0 < α) (hδ : 0 < δ) :
+  Tendsto (fun t : ℝ =>
+      ∫ y, Set.indicator {y : ℝ | δ ≤ |y - x|}
+              (fun y => heatKernel α (x - y) t) y)
+    (𝓝[>] 0) (𝓝 (0 : ℝ)) := by
+  classical
+  -- Change variables: z = (x - y)/√(4 α t).
+  have h_change :
+      ∀ᶠ t in 𝓝[>] (0 : ℝ),
+        (∫ y, Set.indicator {y : ℝ | δ ≤ |y - x|}
+                (fun y => heatKernel α (x - y) t) y)
+        =
+        (1 / Real.sqrt Real.pi) *
+          ∫ z, Set.indicator
+                {z : ℝ | (δ / Real.sqrt (4 * α * t)) ≤ |z|}
+                (fun z => Real.exp (-z^2)) z := by
+    -- move to implication form on 𝓝 0, then assume ht : 0 < t
+    refine (eventually_nhdsWithin_iff).2 ?_
+    refine Eventually.of_forall (fun t => ?_)
+    intro ht  -- ht : 0 < t
+    -- now you’re allowed to use `ht.le` for nonnegativity needs
+    simpa using
+      heatTail_changeOfVariables
+        (α := α) (x := x) (δ := δ) (t := t) (hα := hα) (ht := ht)
+
+  -- Key bound on the Gaussian tail using the 2nd moment:
+  -- for `R ≥ 1`,  ∫_{|z| ≥ R} e^{-z^2} ≤ R^{-2} * ∫ |z|^2 e^{-z^2}.
+  have gauss_tail_bound :
+      ∀ᶠ R in atTop,
+        (∫ z, Set.indicator {z : ℝ | R ≤ |z|} (fun z => Real.exp (-z^2)) z)
+          ≤ (1 / (R ^ (2 : ℕ))) * ∫ z, (|z|^2 * Real.exp (-z^2)) := by
+    -- eventually for large R
+    refine eventually_atTop.2 ⟨(1 : ℝ), ?_⟩
+    intro R hR
+    have hRpos : 0 < R := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) hR
+
+    -- pointwise inequality f ≤ g
+    have hpt :
+        ∀ z, Set.indicator {z : ℝ | R ≤ |z|}
+                (fun z => Real.exp (-z^2)) z
+              ≤ (1 / (R ^ (2 : ℕ))) * (|z| ^ 2 * Real.exp (-z^2)) := by
+      intro z
+      by_cases hz : R ≤ |z|
+      · -- on the set: indicator = exp(-z^2)
+        have hzmem : z ∈ {z : ℝ | R ≤ |z|} := by simpa [Set.mem_setOf_eq] using hz
+        -- square inequality: R^2 ≤ |z|^2
+        have hz' : R ^ 2 ≤ |z| ^ 2 := by
+          have habs : |R| ≤ |z| := by simpa [abs_of_nonneg hRpos.le] using hz
+          simpa [pow_two] using (sq_le_sq.mpr habs)
+        -- denominator positivity
+        have R2pos : 0 < R ^ 2 := by
+          have : 0 < R * R := mul_pos hRpos hRpos
+          simpa [pow_two] using this
+        -- 1 ≤ |z|^2 / R^2
+        have hfrac : (1 : ℝ) ≤ |z| ^ 2 / R ^ 2 := by
+          rw [le_div_iff₀ R2pos, one_mul]; exact hz'
+        -- multiply by exp(-z^2) ≥ 0 and rewrite
+        have ez_nonneg : 0 ≤ Real.exp (-z^2) := (Real.exp_pos _).le
+        have :
+            Real.exp (-z^2)
+              ≤ (|z| ^ 2 / R ^ 2) * Real.exp (-z^2) := by
+          simpa using mul_le_mul_of_nonneg_right hfrac ez_nonneg
+        simpa [Set.indicator_of_mem hzmem, div_eq_mul_inv, pow_two,
+              mul_comm, mul_left_comm, mul_assoc]
+          using this
+      · -- off the set: indicator = 0, RHS ≥ 0
+        have hznot : z ∉ {z : ℝ | R ≤ |z|} := by
+          simpa [Set.mem_setOf_eq] using hz
+        have R2pos : 0 < R ^ 2 := by
+          have : 0 < R * R := mul_pos hRpos hRpos
+          simpa [pow_two] using this
+        have hRcoef_nonneg : 0 ≤ 1 / (R ^ 2) := by
+          simpa using inv_nonneg.mpr (le_of_lt R2pos)
+        have hz2_nonneg : 0 ≤ |z| ^ 2 := by
+          have : 0 ≤ |z| := abs_nonneg z
+          simpa [pow_two] using mul_nonneg this this
+        have ez_nonneg : 0 ≤ Real.exp (-z^2) := (Real.exp_pos _).le
+        have rhs_nonneg :
+            0 ≤ (1 / (R ^ 2)) * (|z| ^ 2 * Real.exp (-z^2)) :=
+          mul_nonneg hRcoef_nonneg (mul_nonneg hz2_nonneg ez_nonneg)
+        simpa [Set.indicator_of_notMem hznot] using rhs_nonneg
+
+    -- integrability of both sides
+    have measS : MeasurableSet {z : ℝ | R ≤ |z|} :=
+      (isClosed_le continuous_const continuous_abs).measurableSet
+    have h_gauss : Integrable (fun z : ℝ => Real.exp (-z^2)) := by
+      simpa using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)
+    have hIntL :
+        Integrable (fun z =>
+          Set.indicator {z : ℝ | R ≤ |z|} (fun z => Real.exp (-z^2)) z) :=
+      (h_gauss.indicator measS)
+    have hIntR :
+        Integrable (fun z =>
+          (1 / (R ^ (2 : ℕ))) * (|z| ^ 2 * Real.exp (-z^2))) :=
+      int_z_sq_exp_z_sq.const_mul (1 / (R ^ (2 : ℕ)))
+
+    -- integrate the pointwise inequality, then pull the constant out
+    calc (∫ z, Set.indicator {z : ℝ | R ≤ |z|} (fun z => Real.exp (-z^2)) z)
+        ≤ ∫ z, (1 / (R ^ (2 : ℕ))) * (|z| ^ 2 * Real.exp (-z^2)) :=
+          integral_mono_ae hIntL hIntR (Eventually.of_forall hpt)
+      _ = (1 / (R ^ (2 : ℕ))) * ∫ z, (|z|^2 * Real.exp (-z^2)) :=
+          integral_const_mul _ _
+  -- Therefore the Gaussian tail → 0 because `R⁻² → 0` and the moment is constant.
+  have gauss_tail_to0 :
+      Tendsto (fun R : ℝ =>
+        ∫ z, Set.indicator {z : ℝ | R ≤ |z|} (fun z => Real.exp (-z^2)) z)
+      atTop (𝓝 (0 : ℝ)) := by
+    -- squeeze between 0 and the vanishing upper bound
+    refine squeeze_zero' (Eventually.of_forall (fun R => ?_)) gauss_tail_bound ?_
+    · exact integral_nonneg (Set.indicator_nonneg (fun z _ => (Real.exp_pos _).le))
+    · have h2 : Tendsto (fun R : ℝ => (1 / (R ^ (2 : ℕ)))) atTop (𝓝 (0 : ℝ)) := by
+        simp only [one_div]
+        exact tendsto_inv_atTop_zero.comp (tendsto_pow_atTop (two_ne_zero))
+      have hcongr : (∫ z, (|z|^2 * Real.exp (-z^2))) = ∫ z, ((z:ℝ)^2 * Real.exp (-z^2)) := by
+        congr 1; funext z; rw [sq_abs]
+      have hbnd := h2.mul_const (∫ z, (|z|^2 * Real.exp (-z^2)))
+      rw [hcongr] at hbnd
+      simpa using hbnd
+
+  -- The rescaled radius `δ / √(4 α t)` tends to `∞` as `t → 0⁺`.
+  have h_sqrt : Tendsto (fun t : ℝ => Real.sqrt (4 * α * t)) (𝓝[>] 0) (𝓝[>] 0) := by
+    apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
+    · have hc : Continuous fun t : ℝ => Real.sqrt (4 * α * t) :=
+        (continuous_const.mul continuous_id).sqrt
+      simpa using (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+    · filter_upwards [self_mem_nhdsWithin] with t ht
+      have ht' : 0 < t := ht
+      exact Real.sqrt_pos.mpr (by positivity)
+  have hR : Tendsto (fun t : ℝ => δ / Real.sqrt (4 * α * t)) (𝓝[>] 0) atTop := by
+    simpa [div_eq_mul_inv] using
+      (tendsto_inv_nhdsGT_zero.comp h_sqrt).const_mul_atTop hδ
+
+  -- Put everything together: replace by the eventually equal function from the change-of-vars,
+  -- then use the constant factor `(1/√π)`.
+  have hmain :
+      Tendsto (fun t : ℝ =>
+        (1 / Real.sqrt Real.pi) *
+          ∫ z, Set.indicator
+                {z : ℝ | (δ / Real.sqrt (4 * α * t)) ≤ |z|}
+                (fun z => Real.exp (-z^2)) z) (𝓝[>] 0) (𝓝 (0 : ℝ)) := by
+    simpa using (gauss_tail_to0.comp hR).const_mul (1 / Real.sqrt Real.pi)
+  exact (tendsto_congr' h_change).mpr hmain
 
 /-! ## Convergence to Initial Data
 
