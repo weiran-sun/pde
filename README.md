@@ -1,23 +1,101 @@
 # Lean Formalization of PDE Topics
 
-The files in this directory contain formalizations of selected topics of PDE (partial differential equations) into [Lean](https://lean-lang.org/).
-The ultimate goal of this formalization is to prepare a comprehensive toolbox for formal analysis of PDEs, for both research and education purposes.
-This formalization may _not_ be fully optimized for efficient Lean compilation, and may have compatibility issues with the latest Lean and mahtlib versions (which evolve very rapidly).
+This repository formalizes selected topics in partial differential equations in [Lean](https://lean-lang.org/). Its goal is to provide a reusable toolbox for formal PDE analysis in research and education.
+
+The current development covers analytic background, the heat, Laplace, and wave equations, Sobolev spaces, ODE existence theory, and the Galerkin method for parabolic equations. It targets Lean and Mathlib `v4.33.0-rc1`. The project is under active development: some declarations still contain `sorry`, and the code is not always optimized for compilation speed or idiomatic Lean usage.
 
 
-## References
-["Partial Differential Equations, A First Course"](https://bookstore.ams.org/amstext-54/),  [Rustom Choksi](https://scholar.google.com/citations?user=Fk1zaTgAAAAJ&hl=en), AMS, 2022.
+## Reference
+
+["Partial Differential Equations, A First Course"](https://bookstore.ams.org/amstext-54/) by [Rustom Choksi](https://scholar.google.com/citations?user=Fk1zaTgAAAAJ&hl=en), AMS, 2022.
 
 
-## Sections
+## Formalized Topics
 
-### Basics
+### Background
 
-#### Heat
+#### Calculus, geometry, and measure theory
 
-- [HeatKernel](https://weiran-sun.github.io/pde/PDE/Basics/Heat/HeatKernel.html): The Fundamental Solution/Heat Kernel and Its Properties.
-- [HeatSolution](https://weiran-sun.github.io/pde/PDE/Basics/Heat/HeatSolution.html): The convolution solution of the heat kernel.
-- [HeatSolutionProperty](https://weiran-sun.github.io/pde/PDE/Basics/Heat/HeatSolutionProperty.html): Properties of the heat solution, involving the convolution of the heat kernel and the initial condition
+- [DomainGeometry](PDE/Background/CalculusMeasureTheory/DomainGeometry.lean): Topological and metric lemmas for balls, spheres, frontiers, and punctured domains.
+- [PDEDomains](PDE/Background/CalculusMeasureTheory/PDEDomains.lean): Domain classes for PDE arguments, together with support and convolution estimates.
+- [HausdorffUnitCircleSphere](PDE/Background/CalculusMeasureTheory/HausdorffUnitCircleSphere.lean): Hausdorff measure calculations for the unit circle and sphere.
+- [SphereSurfaceMeasure](PDE/Background/CalculusMeasureTheory/SphereSurfaceMeasure.lean): Surface measure, Hausdorff measure, and scaling formulas for spheres in three dimensions.
+- [R3GraphMeasure](PDE/Background/CalculusMeasureTheory/GraphHausdorffMeasure/R3GraphMeasure.lean): Area formula for a `C¹` graph in three dimensions.
+- [RnGraphHausdorffMeasure](PDE/Background/CalculusMeasureTheory/GraphHausdorffMeasure/RnGraphHausdorffMeasure.lean): Area formula for a `C¹` graph in arbitrary dimension.
+- [SurfaceIntegration](PDE/Background/CalculusMeasureTheory/GraphHausdorffMeasure/SurfaceIntegration.lean): Integration of scalar and vector-valued functions over `C¹` graphs.
+- [R3Divergence](PDE/Background/CalculusMeasureTheory/DivergenceTheorem/R3Divergence.lean): A complete divergence theorem development in three dimensions.
+- [GeneralizedDivergence](PDE/Background/CalculusMeasureTheory/DivergenceTheorem/GeneralizedDivergence.lean): The divergence theorem in arbitrary finite dimension.
+
+#### Functional analysis
+
+- [DistributionPairing1D](PDE/Background/FunctionalAnalysis/DistributionPairing1D.lean): Shared one-dimensional distribution pairings and integration-by-parts tools.
+- [HilbertWeakCompactness](PDE/Background/FunctionalAnalysis/HilbertWeakCompactness.lean): Weak sequential compactness for bounded sequences in separable Hilbert spaces.
+- [OrthonormalBasis](PDE/Background/FunctionalAnalysis/OrthonormalBasis.lean): Orthogonality and normalization of the sine system on `[0, π]`.
+
+### Function Spaces
+
+#### Sobolev spaces
+
+- [LpFunctionSpaces](PDE/FunctionSpaces/SobolevSpace/LpFunctionSpaces.lean): Compactly supported smooth test functions and local `Lᵖ` spaces.
+- [WeakDerivative](PDE/FunctionSpaces/SobolevSpace/WeakDerivative.lean): Weak derivatives defined through test-function pairings.
+- [SobolevSpaces](PDE/FunctionSpaces/SobolevSpace/SobolevSpaces.lean): The spaces `W^{k,p}(U)`, their weak derivatives, and normed-space structure.
+- [HkSpaces](PDE/FunctionSpaces/SobolevSpace/HkSpaces.lean): Hilbert Sobolev spaces `H^k(U) = W^{k,2}(U)` and their inner-product structure.
+- [Mollification](PDE/FunctionSpaces/SobolevSpace/Mollification.lean): Zero extension, convolution mollification, smoothness, and approximation tools.
+
+### Basic PDEs
+
+- [LaplacianBridge](PDE/Basics/LaplacianBridge.lean): Equivalence between the project's trace-based Laplacians and Mathlib's Laplacian.
+
+#### Heat equation
+
+- [HeatKernel](PDE/Basics/Heat/HeatKernel.lean): The one-dimensional heat kernel, its positivity, normalization, derivatives, and the heat equation.
+- [HeatConvolutionAbstract](PDE/Basics/Heat/HeatConvolutionAbstract.lean): An abstract differentiation-under-the-integral theorem showing that convolution solves the heat equation.
+- [HeatSolution](PDE/Basics/Heat/HeatSolution.lean): The heat-kernel convolution solution and its derivative formulas.
+- [HeatSolutionProperty](PDE/Basics/Heat/HeatSolutionProperty.lean): Symmetry, mass, maximum-principle, and initial-value properties of the heat solution.
+- [HeatDecay](PDE/Basics/Heat/HeatDecay.lean): Large-time decay for heat solutions with integrable initial data.
+- [HeatMaximumPrinciple](PDE/Basics/Heat/HeatMaximumPrinciple.lean): The maximum principle on a finite space-time cylinder in one dimension.
+- [HeatKernelND](PDE/Basics/Heat/HeatKernelND.lean): The heat kernel and Gaussian identities in arbitrary finite dimension.
+- [HeatSolutionND](PDE/Basics/Heat/HeatSolutionND.lean): The heat-kernel convolution solution in arbitrary finite dimension.
+- [HeatSolutionPropertyND](PDE/Basics/Heat/HeatSolutionPropertyND.lean): Mass, maximum-principle, and initial-value properties in arbitrary finite dimension.
+- [HeatMaximumPrincipleND](PDE/Basics/Heat/HeatMaximumPrincipleND.lean): The maximum principle on finite-dimensional rectangular space-time cylinders.
+
+#### Laplace equation
+
+- [CalculusBasic](PDE/Basics/Laplace/CalculusBasic.lean): Calculus, compact-support, inverse-norm, and punctured-domain lemmas used throughout the Laplace theory.
+- [GreensIdentities](PDE/Basics/Laplace/GreensIdentities.lean): Spherical integration, punctured-domain flux, and Green's identities.
+- [SphericalMeans](PDE/Basics/Laplace/SphericalMeans.lean): Spherical integrands, radial derivatives, spherical means, and related bounds.
+- [LaplaceMeanValue](PDE/Basics/Laplace/LaplaceMeanValue.lean): The mean-value property for harmonic functions in three dimensions.
+- [LaplaceMaximumPrinciple](PDE/Basics/Laplace/LaplaceMaximumPrinciple.lean): Maximum principles and uniqueness for harmonic functions in three dimensions.
+- [LaplaceMaximumPrincipleND](PDE/Basics/Laplace/LaplaceMaximumPrincipleND.lean): Weak maximum and minimum principles in arbitrary finite dimension.
+- [LaplaceDirichletPrinciple](PDE/Basics/Laplace/LaplaceDirichletPrinciple.lean): Dirichlet-energy minimization and harmonicity.
+- [FundamentalSolution](PDE/Basics/Laplace/FundamentalSolution.lean): The three-dimensional fundamental solution and its differential properties.
+- [FundamentalSolutionND](PDE/Basics/Laplace/FundamentalSolutionND.lean): Fundamental solutions and harmonicity away from the origin in dimension `N ≥ 2`.
+- [LaplaceDistributionalLaplacian](PDE/Basics/Laplace/LaplaceDistributionalLaplacian.lean): The distributional Laplacian of `1/‖x‖` in three dimensions.
+- [PoissonEquation](PDE/Basics/Laplace/PoissonEquation.lean): Convolution with the fundamental solution for Poisson's equation.
+- [RepresentationFormula](PDE/Basics/Laplace/RepresentationFormula.lean): Green's representation formula on PDE domains.
+- [GreensFunction](PDE/Basics/Laplace/GreensFunction.lean): Green's functions, harmonic correctors, and representation results.
+- [GreensFunctionSymmetry](PDE/Basics/Laplace/GreensFunctionSymmetry.lean): Symmetry of Green's functions.
+
+#### Wave equation
+
+- [WaveGeneralSolution1D](PDE/Basics/Wave/WaveGeneralSolution1D.lean): Traveling-wave characterization of general one-dimensional solutions.
+- [WaveIVP1D](PDE/Basics/Wave/WaveIVP1D.lean): D'Alembert's formula for the one-dimensional initial-value problem.
+- [WaveIVPSource1D](PDE/Basics/Wave/WaveIVPSource1D.lean): D'Alembert's formula with a source term and the dependence triangle.
+- [WaveBVP1D](PDE/Basics/Wave/WaveBVP1D.lean): The fixed-end half-line problem via odd reflection.
+- [WaveEnergyConservation1D](PDE/Basics/Wave/WaveEnergyConservation1D.lean): Conservation and balance laws for the total energy.
+- [WaveIVP2D](PDE/Basics/Wave/WaveIVP2D.lean): Poisson's solution formula for the two-dimensional initial-value problem.
+
+### Methods
+
+#### ODE methods
+
+- [CaratheodoryExistence](PDE/Methods/ODEMethods/CaratheodoryExistence.lean): A self-contained proof of the Carathéodory existence theorem for ODEs.
+
+#### Galerkin method for parabolic equations
+
+- [ParabolicOperator](PDE/Methods/Galerkin/Parabolic/ParabolicOperator.lean): Parabolic coefficients, bilinear forms, weak solutions, energy estimates, and Galerkin limits.
+- [ParabolicExistence](PDE/Methods/Galerkin/Parabolic/ParabolicExistence.lean): Galerkin ODE solvability and weak-solution existence for continuous-in-time data.
+- [ParabolicExistenceCaratheodory](PDE/Methods/Galerkin/Parabolic/ParabolicExistenceCaratheodory.lean): Galerkin ODE solvability under measurable-in-time Carathéodory assumptions.
 
 
 ## Other Resources
